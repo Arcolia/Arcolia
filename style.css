@@ -31,6 +31,8 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+
+  filter: brightness(1.05) saturate(1.08);
 }
 
 /* Dark cinematic veil for readability */
