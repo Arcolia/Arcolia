@@ -1,12 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;600&display=swap');
 
 body {
-  margin: 0;
+margin: 0;
   padding: 0;
-  background: radial-gradient(circle at top, #1b1b1b 0%, #050505 70%);
-  color: #f5f0e6;
-  font-family: 'Inter', sans-serif;
   min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+  color: #f5f0e6;
+
+  /* Background image */
+  background-image: url("arcolia-gate.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+
   display: flex;
   justify-content: center;
 }
