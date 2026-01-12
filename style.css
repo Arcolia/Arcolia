@@ -1,27 +1,34 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;600&display=swap');
 
+html, body {
+  height: 100%;
+}
+
 body {
-margin: 0;
-  padding: 0;
-  min-height: 100vh;
+  margin: 0;
   font-family: 'Inter', sans-serif;
   color: #f5f0e6;
 
-  /* Background image */
-  background-image: url("arcolia-gate.jpg/pictures/");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  /* FORCE background to show */
+  background: url("./arcolia-gate.jpg") center center / cover no-repeat fixed;
 
-  display: flex;
-  justify-content: center;
+  /* Make layering predictable */
+  position: relative;
+}
+
+/* Dark overlay ON TOP of the image */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
-  z-index: -1;
+  z-index: 0;
+}
+
+/* Your content sits above the overlay */
+.portal {
+  position: relative;
+  z-index: 1;
 }
 
 .portal {
