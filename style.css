@@ -10,7 +10,7 @@ body {
   color: #f5f0e6;
 
   /* FORCE background to show */
-  background: url("/arcolia-gate.jpg/pictures/") center center / cover no-repeat fixed;
+  background: url("/arcolia-gate.jpg") center center / cover no-repeat fixed;
 
   /* Make layering predictable */
   position: relative;
