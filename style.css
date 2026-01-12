@@ -5,14 +5,19 @@ html, body {
 }
 
 body {
-  margin: 0;
+ margin: 0;
   font-family: 'Inter', sans-serif;
   color: #f5f0e6;
+  min-height: 100vh;
 
-  /* FORCE background to show */
-  background: url("/arcolia-gate.jpg") center center / cover no-repeat fixed;
+  /* IMPORTANT: fallback + absolute path */
+  background-color: #000;
+  background-image: url("/arcolia-gate.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 
-  /* Make layering predictable */
   position: relative;
 }
 
