@@ -28,6 +28,8 @@ body::before {
   max-width: 900px;
   padding: 80px 30px;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .hero h1 {
