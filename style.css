@@ -12,7 +12,7 @@ body {
 
   /* IMPORTANT: fallback + absolute path */
   background-color: #000;
-  background-image: url("arcolia-gate.png.png");
+  background-image: url("/pictures/arcolia-gate.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
