@@ -27,7 +27,7 @@ body {
   position: relative;
 
   /* 🔥 Make sure this path matches where your image is */
-  background-image: url("/arcolia-gate.jpg");
+  background-image: url("/images/arcolia-gate.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
