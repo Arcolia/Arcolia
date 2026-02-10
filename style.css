@@ -12,11 +12,11 @@
   --stone2: #1b1a18;
   --moss: rgba(70,110,70,.45);
 
-  --wood1: #1c1410;
-  --wood2: #0f0b09;
+  --wood1: #241b12;
+  --wood2: #120c08;
 
-  --torch: rgba(255,170,70,.9);
-  --torch2: rgba(255,120,20,.75);
+  --torch: rgba(255,160,60,.9);
+  --torch2: rgba(255,90,15,.75);
 }
 
 *{ box-sizing:border-box; }
