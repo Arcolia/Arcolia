@@ -180,174 +180,160 @@ body{
 /* -------------------------
    Ancient Doors (Arched)
 -------------------------- */
-.doors{
-  position:absolute;
-  left:50%;
-  top:50%;
-  width: min(980px, 92vw);
-  height: min(720px, 86vh);
-  transform: translate(-50%, -50%);
-  overflow:hidden;
-
-  /* Arch-ish silhouette */
-  border-radius: 28px 28px 34px 34px;
-  clip-path: polygon(
-    0% 18%,
-    8% 8%,
-    22% 2%,
-    50% 0%,
-    78% 2%,
-    92% 8%,
-    100% 18%,
-    100% 100%,
-    0% 100%
-  );
-
-  background: #070606;
-  box-shadow:
-    0 60px 140px rgba(0,0,0,.78),
-    inset 0 0 0 1px rgba(255,255,255,.05);
-  filter: drop-shadow(0 20px 60px rgba(0,0,0,.55));
+.doors::before {
+    content: "";
+    position: absolute;
+    inset: 34px -120px;
+    left: 50%;
+    width: 260px;
+    transform: translateX(-50%);
+    background:
+        radial-gradient(circle at 50% 50%, rgba(255,220,150,.2), transparent 78%),
+        linear-gradient(90deg,
+            rgba(255,230,180,.6) 0px,
+            rgba(255,230,180,.4) 8px,
+            rgba(255,220,150,0.38) 18px,
+            rgba(255,220,150,0.18) 30px,
+            rgba(255,220,150,0.06) 40px,
+            rgba(255,220,150,0.02) 50px,
+            rgba(255,220,150,0) 58px
+        ),
+        linear-gradient(180deg, rgba(0,0,0,.3), rgba(255,255,255,.06));
+    opacity:.92;
 }
 
-/* Stone frame around the doors */
-.doors::after{
-  content:"";
-  position:absolute;
-  inset:-18px;
-  pointer-events:none;
-
-  background:
-    radial-gradient(380px 280px at 30% 20%, rgba(255,255,255,.07), transparent 60%),
-    radial-gradient(420px 320px at 70% 65%, rgba(0,0,0,.55), transparent 62%),
-    repeating-linear-gradient(90deg,
-      rgba(255,255,255,.03) 0 2px,
-      rgba(0,0,0,.03) 2px 6px
-    ),
-    linear-gradient(180deg, rgba(70,70,70,.55), rgba(25,25,25,.95));
-
-  border-radius: 34px;
-  clip-path: inherit;
-
-  box-shadow:
-    0 0 0 10px rgba(0,0,0,.55) inset,
-    0 0 0 1px rgba(255,255,255,.06) inset;
-
-  filter: contrast(1.05) saturate(.85);
-  opacity: .95;
+.doors::after {
+    content: "";
+    position: absolute;
+    inset: 14px -120px;
+    left: 50%;
+    width: 278px;
+    transform: translateX(-50%);
+    background:
+        radial-gradient(circle at 50% 50%, rgba(255,220,150,.3), transparent 62%),
+        linear-gradient(90deg,
+            rgba(255,230,180,.4) 0px,
+            rgba(255,230,180,.2) 8px,
+            rgba(255,220,150,0.16) 18px,
+            rgba(255,220,150,0.08) 30px,
+            rgba(255,220,150,0.04) 40px,
+            rgba(255,220,150,0.02) 50px,
+            rgba(255,220,150,0) 58px
+        ),
+        linear-gradient(180deg, rgba(0,0,0,.4), rgba(255,255,255,.06));
+    box-shadow:
+        0 0 0 10px rgba(0,0,0,.55) inset,
+        0 0 0 1px rgba(255,255,255,.06) inset;
 }
 
-/* Door halves */
-.door{
-  position:absolute;
-  top:0; bottom:0;
-  width:50%;
-
-  background:
-    radial-gradient(520px 360px at 50% 18%, rgba(255,230,180,.06), transparent 62%),
-    /* plank seams */
-    repeating-linear-gradient(
-      90deg,
-      rgba(0,0,0,.58) 0px,
-      rgba(0,0,0,.58) 2px,
-      rgba(0,0,0,0) 14px,
-      rgba(0,0,0,0) 54px
-    ),
-    /* bevels + depth */
-    repeating-linear-gradient(
-      90deg,
-      rgba(255,255,255,.07) 0px,
-      rgba(255,255,255,0) 8px,
-      rgba(0,0,0,.24) 46px,
-      rgba(0,0,0,0) 54px
-    ),
-    linear-gradient(180deg, var(--woodA), var(--woodB));
-
-  filter: contrast(1.10) saturate(1.06);
+.door {
+    position: absolute;
+    bottom: -40px;
+    width: 320px;
+    border-radius: 28px;
+    background:
+        radial-gradient(520px 360px at 50% 18%, rgba(255,230,180,.06), transparent 62%),
+        repeating-linear-gradient(
+            90deg,
+            rgba(0,0,0,.58) 0px,
+            rgba(0,0,0,.58) 2px,
+            rgba(0,0,0,0) 14px,
+            rgba(0,0,0,0) 54px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            rgba(255,255,255,.07) 0px,
+            rgba(255,255,255,0) 8px,
+            rgba(0,0,0,.24) 46px,
+            rgba(0,0,0,0) 54px
+        ),
+        linear-gradient(180deg, var(--woodA), var(--woodB));
+    filter: contrast(1.10) saturate(1.06);
 }
 
-.door-left{
-  left:0;
-  border-radius: 28px 0 0 34px;
-  transform-origin:right center;
-  animation: doorBreath 9s ease-in-out infinite;
+.door-left {
+    left: 0;
+    border-radius: 28px 0 0 34px;
+    transform-origin: right center;
+    animation: doorBreath 9s ease-in-out infinite;
 }
-.door-right{
-  right:0;
-  border-radius: 0 28px 34px 0;
-  transform-origin:left center;
-  animation: doorBreath 9s ease-in-out infinite reverse;
+
+.door-right {
+    right: 0;
+    border-radius: 0 28px 34px 0;
+    transform-origin: left center;
+    animation: doorBreath 9s ease-in-out infinite reverse;
 }
 
 /* Subtle breathing (ancient wood shifting) */
-@keyframes doorBreath{
-  0%,100%{ transform: perspective(900px) rotateY(0deg); }
-  50%{ transform: perspective(900px) rotateY(-0.9deg); }
+@keyframes doorBreath {
+    0%, 100% { transform: perspective(900px) rotateY(0deg); }
+    50% { transform: perspective(900px) rotateY(-0.9deg); }
 }
 
 /* Carved inset panel per door (less “flat”) */
-.door::before{
-  content:"";
-  position:absolute;
-  inset: 9% 8%;
-  border-radius: 22px;
-  background:
-    radial-gradient(240px 160px at 50% 20%, rgba(255,255,255,.06), transparent 60%),
-    linear-gradient(180deg, rgba(0,0,0,.25), rgba(255,255,255,.02), rgba(0,0,0,.38));
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.05),
-    inset 0 22px 70px rgba(0,0,0,.60);
-  opacity:.92;
+.door::before {
+    content: "";
+    position: absolute;
+    inset: 9% 8%;
+    border-radius: 22px;
+    background:
+        radial-gradient(240px 160px at 50% 20%, rgba(255,255,255,.06), transparent 60%),
+        linear-gradient(180deg, rgba(0,0,0,.25), rgba(255,255,255,.02), rgba(0,0,0,.38));
+    box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.05),
+        inset 0 22px 70px rgba(0,0,0,.60);
+    opacity: .92;
 }
 
 /* Center seam light */
-.seam-light{
-  position:absolute;
-  top:0; bottom:0;
-  left:50%;
-  width: 10px;
-  transform: translateX(-50%);
-  background:
-    linear-gradient(180deg, rgba(255,220,150,0), rgba(255,210,140,.78), rgba(255,220,150,0));
-  filter: blur(0.8px);
-  opacity: .95;
-  animation: seamPulse 3.4s ease-in-out infinite;
+.seam-light {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50%;
+    width: 10px;
+    transform: translateX(-50%);
+    background:
+        linear-gradient(180deg, rgba(255,220,150,0), rgba(255,210,140,.78), rgba(255,220,150,0));
+    filter: blur(0.8px);
+    opacity: .95;
+    animation: seamPulse 3.4s ease-in-out infinite;
 }
 
-.seam-light::before{
-  content:"";
-  position:absolute;
-  inset:-140px -120px;
-  left:50%;
-  width: 300px;
-  transform: translateX(-50%);
-  background: radial-gradient(circle at 50% 50%, rgba(255,220,150,.24), transparent 62%);
-  filter: blur(14px);
-  opacity:.92;
-  animation: seamGlow 4.4s ease-in-out infinite;
-  pointer-events:none;
+.seam-light::before {
+    content: "";
+    position: absolute;
+    inset: -140px -120px;
+    left: 50%;
+    width: 300px;
+    transform: translateX(-50%);
+    background: radial-gradient(circle at 50% 50%, rgba(255,220,150,.24), transparent 62%);
+    filter: blur(14px);
+    opacity: .92;
+    animation: seamGlow 4.4s ease-in-out infinite;
+    pointer-events: none;
 }
 
-.seam-light::after{
-  content:"";
-  position:absolute;
-  inset:-180px -140px;
-  background:
-    radial-gradient(circle at 50% 55%, rgba(255,230,180,.10), transparent 58%),
-    radial-gradient(circle at 50% 55%, rgba(255,210,140,.08), transparent 62%);
-  animation: seamGlow 4.2s ease-in-out infinite;
-  pointer-events:none;
+.seam-light::after {
+    content: "";
+    position: absolute;
+    inset: -180px -140px;
+    background:
+        radial-gradient(circle at 50% 55%, rgba(255,230,180,.10), transparent 58%),
+        radial-gradient(circle at 50% 55%, rgba(255,210,140,.08), transparent 62%);
+    animation: seamGlow 4.2s ease-in-out infinite;
+    pointer-events: none;
 }
 
-@keyframes seamPulse{
-  0%,100%{ opacity:.65; }
-  50%{ opacity:1; }
-}
-@keyframes seamGlow{
-  0%,100%{ opacity:.62; transform: translateX(-50%) scale(0.98); }
-  50%{ opacity:1; transform: translateX(-50%) scale(1.04); }
+@keyframes seamPulse {
+    0%, 100% { opacity: .65; }
+    50% { opacity: 1; }
 }
 
+@keyframes seamGlow {
+    0%, 100% { opacity: .62; transform: translateX(-50%) scale(0.98); }
+    50% { opacity: 1; transform: translateX(-50%) scale(1.04); }
+}
 /* -------------------------
    Torches (Better Sconces)
 -------------------------- */
