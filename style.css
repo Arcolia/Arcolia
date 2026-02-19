@@ -176,7 +176,6 @@ body{
   opacity:.22;
   mix-blend-mode: overlay;
 }
-
 /* -------------------------
    Ancient Doors (Arched)
 -------------------------- */
@@ -251,27 +250,6 @@ body{
     filter: contrast(1.10) saturate(1.06);
 }
 
-.door-left {
-    left: 0;
-    border-radius: 28px 0 0 34px;
-    transform-origin: right center;
-    animation: doorBreath 9s ease-in-out infinite;
-}
-
-.door-right {
-    right: 0;
-    border-radius: 0 28px 34px 0;
-    transform-origin: left center;
-    animation: doorBreath 9s ease-in-out infinite reverse;
-}
-
-/* Subtle breathing (ancient wood shifting) */
-@keyframes doorBreath {
-    0%, 100% { transform: perspective(900px) rotateY(0deg); }
-    50% { transform: perspective(900px) rotateY(-0.9deg); }
-}
-
-/* Carved inset panel per door (less “flat”) */
 .door::before {
     content: "";
     position: absolute;
@@ -286,7 +264,37 @@ body{
     opacity: .92;
 }
 
-/* Center seam light */
+.door::after {
+    content: "";
+    position: absolute;
+    inset: -140px -120px;
+    left: 50%;
+    width: 300px;
+    transform: translateX(-50%);
+    background: radial-gradient(circle at 50% 50%, rgba(255,220,150,.24), transparent 62%);
+    filter: blur(14px);
+    opacity: .92;
+}
+
+.door-left {
+    left: 0;
+    border-radius: 28px 0 0 34px;
+    transform-origin: right center;
+    animation: doorBreath 9s ease-in-out infinite;
+}
+
+.door-right {
+    right: 0;
+    border-radius: 0 28px 34px 0;
+    transform-origin: left center;
+    animation: doorBreath 9s ease-in-out infinite reverse;
+}
+
+@keyframes doorBreath {
+    0%, 100% { transform: perspective(900px) rotateY(0deg); }
+    50% { transform: perspective(900px) rotateY(-0.9deg); }
+}
+
 .seam-light {
     position: absolute;
     top: 0; bottom: 0;
@@ -332,7 +340,7 @@ body{
 
 @keyframes seamGlow {
     0%, 100% { opacity: .62; transform: translateX(-50%) scale(0.98); }
-    50% { opacity: 1; transform: translateX(-50%) scale(1.04); }
+    50% { opacity: 1; transform: translateX(-50%) scale(1.02); }
 }
 /* -------------------------
    Torches (Better Sconces)
