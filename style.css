@@ -616,3 +616,18 @@ body{
   mix-blend-mode: multiply;
   opacity:.92;
 }
+/* Crack readability (sealed but visible) */
+.seam-light{
+  width: 3px !important;
+  opacity: .28 !important;
+  filter: blur(.55px) !important;
+}
+
+/* Wider, warmer dust glow so you can actually perceive it */
+.seam-light::before{
+  width: 220px !important;
+  opacity: .30 !important;
+  filter: blur(18px) !important;
+}
+.vignette{ opacity: .55 !important; }
+.grain{ opacity: .06 !important; }
