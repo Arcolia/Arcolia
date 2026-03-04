@@ -563,3 +563,14 @@ body{
   .torch{ display:none; }
   .stone{ width: 42vw; }
 }
+/* Force readable text in the foreground card */
+.card{ color: rgba(255,255,255,.90); }
+
+.title{
+  color: #c8ab62;
+  text-shadow: 0 8px 24px rgba(0,0,0,.55);
+}
+
+.subtitle{ color: rgba(255,255,255,.70); }
+.body{ color: rgba(255,255,255,.78); }
+.footnote{ color: rgba(255,255,255,.58); }
