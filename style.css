@@ -512,7 +512,6 @@ body{
   opacity: .50;
   animation: smokeRise 6.2s linear infinite;
 }
-
 @keyframes flicker{
   from{ transform: translateX(-50%) scale(1.00) rotate(-1deg); opacity: .96; }
   to  { transform: translateX(-50%) scale(1.07) rotate( 1deg); opacity: .80; }
@@ -526,7 +525,6 @@ body{
   12%{ opacity:.50; }
   100%{ transform: translateX(-50%) translateY(-90px); opacity:0; }
 }
-
 /* -------------------------
    Vignette + Grain (kept light so door detail reads)
 -------------------------- */
@@ -538,7 +536,6 @@ body{
     radial-gradient(900px 650px at 50% 55%, rgba(0,0,0,0) 22%, rgba(0,0,0,.26) 82%);
   opacity:.55;
 }
-
 .grain{
   inset:0;
   pointer-events:none;
@@ -549,12 +546,10 @@ body{
   mix-blend-mode: overlay;
   animation: grainShift 6s ease-in-out infinite;
 }
-
 @keyframes grainShift{
   0%,100%{ transform: translate3d(0,0,0); }
   50%{ transform: translate3d(-12px, 10px, 0); }
 }
-
 /* -------------------------
    Mobile safety
 -------------------------- */
@@ -570,7 +565,10 @@ body{
   color: #c8ab62;
   text-shadow: 0 8px 24px rgba(0,0,0,.55);
 }
-
 .subtitle{ color: rgba(255,255,255,.70); }
 .body{ color: rgba(255,255,255,.78); }
 .footnote{ color: rgba(255,255,255,.58); }
+}
+/* Keep overlays behind the UI */
+.gate-scene{ z-index: 0; }
+.portal{ z-index: 10; isolation: isolate; }
