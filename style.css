@@ -1,7 +1,16 @@
+Here’s a single, clean, full style.css you can paste in (delete everything currently in your CSS and replace with this). It matches your HTML exactly and includes: stone walls, arched frame, sealed stone slab doors, a visible but subtle crack, torches, vignette + grain, and your centered card.
+​
+
+css
 /* =========================================================
-   ARCOLIA — SINGLE CLEAN FILE (SEALED STONE ENTRANCE)
+   ARCOLIA — SINGLE CLEAN FILE (SEALED STONE ENTRANCE + CRACK)
    Paste this as the ONLY contents of style.css
-   Matches your HTML: .gate-scene / .stone / .torch / .doors / .door / .seam-light
+   Matches your HTML:
+   .gate-scene .stone(.stone-left/.stone-right)
+   .torch(.torch-left/.torch-right) .torch-sconce .glow .flame .smoke
+   .doors .door(.door-left/.door-right) .seam-light
+   .vignette .grain
+   .portal .card ...
    ========================================================= */
 
 /* -------------------------
@@ -120,11 +129,15 @@ body{
     radial-gradient(900px 650px at 50% 72%, rgba(0,0,0,.65), rgba(0,0,0,1));
 }
 
-/* Ensure z-index works */
-.gate-scene > *{ position:absolute; }
+/* Layering */
+.stone{ z-index:1; position:absolute; }
+.doors{ z-index:2; position:absolute; }
+.torch{ z-index:3; position:absolute; }
+.vignette{ z-index:4; position:absolute; }
+.grain{ z-index:5; position:absolute; }
 
 /* -------------------------
-   Stone Walls (left/right)
+   Stone Walls
 -------------------------- */
 .stone{
   top:0; bottom:0;
@@ -139,7 +152,7 @@ body{
 .stone-left{ left:0; }
 .stone-right{ right:0; transform: scaleX(-1); }
 
-/* Moss overlay */
+/* Moss */
 .stone::after{
   content:"";
   position:absolute; inset:0;
@@ -152,7 +165,7 @@ body{
   filter: blur(.25px);
 }
 
-/* Stone block suggestion */
+/* Block suggestion */
 .stone::before{
   content:"";
   position:absolute; inset:0;
@@ -171,7 +184,7 @@ body{
 }
 
 /* -------------------------
-   Doors container (arched)
+   Doorway container (arched)
 -------------------------- */
 .doors{
   left:50%;
@@ -201,13 +214,12 @@ body{
   filter: drop-shadow(0 20px 60px rgba(0,0,0,.55));
 }
 
-/* Stone frame around the entrance */
+/* Stone frame (kept softer so door detail shows) */
 .doors::after{
   content:"";
   position:absolute;
   inset:-18px;
   pointer-events:none;
-
   background:
     radial-gradient(380px 280px at 30% 20%, rgba(255,255,255,.07), transparent 60%),
     radial-gradient(420px 320px at 70% 65%, rgba(0,0,0,.55), transparent 62%),
@@ -216,26 +228,41 @@ body{
       rgba(0,0,0,.03) 2px 6px
     ),
     linear-gradient(180deg, rgba(70,70,70,.55), rgba(25,25,25,.95));
-
   border-radius: 34px;
   clip-path: inherit;
-
   box-shadow:
     0 0 0 10px rgba(0,0,0,.55) inset,
     0 0 0 1px rgba(255,255,255,.06) inset;
-
   filter: contrast(1.05) saturate(.85);
-  opacity: .70; /* lower so door detail reads */
+  opacity: .70;
+}
+
+/* Weight at top (ancient “carved” feel) */
+.doors::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(120% 85% at 50% 0%,
+      rgba(0,0,0,.78) 0%,
+      rgba(0,0,0,0) 55%),
+    radial-gradient(240px 90px at 50% 8%,
+      rgba(0,0,0,.55),
+      rgba(0,0,0,0) 70%);
+  mix-blend-mode: multiply;
+  opacity:.92;
 }
 
 /* -------------------------
-   SEALED STONE DOOR HALVES
+   Sealed stone “door” (two halves, but reads as one slab)
 -------------------------- */
 .door{
+  position:absolute;
   top:0; bottom:0;
   width:50%;
 
-  /* Make the door tops follow the arch too */
+  /* follow the arch so tops aren’t boxy */
   clip-path: polygon(
     0% 18%,
     16% 7%,
@@ -252,7 +279,7 @@ body{
     /* base stone */
     linear-gradient(180deg, #1a1917 0%, #0b0a09 100%),
 
-    /* horizontal slab courses (few + chunky) */
+    /* chunky horizontal slab courses */
     repeating-linear-gradient(
       180deg,
       rgba(0,0,0,.90) 0px,
@@ -262,7 +289,7 @@ body{
       rgba(0,0,0,0) 170px
     ),
 
-    /* chisel texture */
+    /* chisel micro-texture */
     repeating-linear-gradient(
       14deg,
       rgba(255,255,255,.05) 0px,
@@ -275,7 +302,7 @@ body{
     radial-gradient(360px 260px at 72% 62%, rgba(0,0,0,.32), transparent 72%),
     radial-gradient(260px 200px at 55% 22%, rgba(255,255,255,.04), transparent 70%),
 
-    /* faint warm spill from above */
+    /* faint warm spill */
     radial-gradient(900px 520px at 50% 18%, rgba(255,230,180,.05), transparent 62%);
 
   filter: contrast(1.20) saturate(.90);
@@ -285,13 +312,14 @@ body{
   left:0;
   transform-origin:right center;
   animation: doorBreath 10s ease-in-out infinite;
-  box-shadow: inset -28px 0 34px rgba(0,0,0,.72);
+  /* no split shadow (sealed look) */
+  box-shadow: none;
 }
 .door-right{
   right:0;
   transform-origin:left center;
   animation: doorBreath 10s ease-in-out infinite reverse;
-  box-shadow: inset 28px 0 34px rgba(0,0,0,.72);
+  box-shadow: none;
 }
 
 @keyframes doorBreath{
@@ -299,7 +327,7 @@ body{
   50%{ transform: perspective(900px) rotateY(-0.6deg); }
 }
 
-/* Pits + tiny cracks overlay */
+/* Pits + faint cracks overlay */
 .door::after{
   content:"";
   position:absolute;
@@ -323,45 +351,57 @@ body{
 }
 
 /* -------------------------
-   Seam light (SEALED = low)
+   Crack (visible but subtle)
 -------------------------- */
 .seam-light{
+  position:absolute;
   top:0; bottom:0;
   left:50%;
-  width: 10px;
+  width: 3px;                 /* readable crack */
   transform: translateX(-50%);
-  background:
-    linear-gradient(180deg,
-      rgba(255,220,150,0),
-      rgba(255,210,140,.55),
-      rgba(255,220,150,0)
-    );
-  filter: blur(1.2px);
+  background: linear-gradient(
+    180deg,
+    rgba(255,220,150,0),
+    rgba(255,210,140,.65),
+    rgba(255,220,150,0)
+  );
+  filter: blur(.55px);
   opacity: .28;
-  animation: seamPulse 4.2s ease-in-out infinite;
+  animation: seamPulse 7s ease-in-out infinite;
 }
 
 .seam-light::before{
   content:"";
   position:absolute;
-  inset:-160px -140px;
+  inset:-180px -160px;
   left:50%;
-  width: 320px;
+  width: 220px;               /* dust glow width */
   transform: translateX(-50%);
   background: radial-gradient(circle at 50% 50%, rgba(255,220,150,.14), transparent 65%);
   filter: blur(18px);
-  opacity:.55;
-  animation: seamGlow 6s ease-in-out infinite;
+  opacity:.30;
+  pointer-events:none;
+  animation: seamGlow 8.5s ease-in-out infinite;
+}
+
+.seam-light::after{
+  content:"";
+  position:absolute;
+  inset:-220px -180px;
+  background:
+    radial-gradient(circle at 50% 55%, rgba(255,230,180,.08), transparent 58%),
+    radial-gradient(circle at 50% 55%, rgba(255,210,140,.06), transparent 62%);
+  opacity:.35;
   pointer-events:none;
 }
 
 @keyframes seamPulse{
-  0%,100%{ opacity:.20; }
-  50%{ opacity:.36; }
+  0%,100%{ opacity:.22; }
+  50%{ opacity:.34; }
 }
 @keyframes seamGlow{
-  0%,100%{ opacity:.42; transform: translateX(-50%) scale(0.98); }
-  50%{ opacity:.70; transform: translateX(-50%) scale(1.03); }
+  0%,100%{ opacity:.24; transform: translateX(-50%) scale(0.99); }
+  50%{ opacity:.34; transform: translateX(-50%) scale(1.03); }
 }
 
 /* -------------------------
@@ -488,7 +528,7 @@ body{
 }
 
 /* -------------------------
-   Vignette + Grain
+   Vignette + Grain (kept light so door detail reads)
 -------------------------- */
 .vignette{
   inset:-10%;
@@ -496,7 +536,7 @@ body{
   background:
     radial-gradient(closest-side at 50% 50%, rgba(0,0,0,0) 40%, rgba(0,0,0,.45) 75%, rgba(0,0,0,.84) 100%),
     radial-gradient(900px 650px at 50% 55%, rgba(0,0,0,0) 22%, rgba(0,0,0,.26) 82%);
-  opacity:.65; /* keep it softer so door detail stays visible */
+  opacity:.55;
 }
 
 .grain{
@@ -505,7 +545,7 @@ body{
   background-image:
     repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0px, rgba(255,255,255,.02) 1px, transparent 2px, transparent 4px),
     repeating-linear-gradient(90deg, rgba(0,0,0,.02) 0px, rgba(0,0,0,.02) 1px, transparent 2px, transparent 5px);
-  opacity:.08;
+  opacity:.06;
   mix-blend-mode: overlay;
   animation: grainShift 6s ease-in-out infinite;
 }
