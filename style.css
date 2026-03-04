@@ -241,7 +241,18 @@ body{
   position:absolute;
   top:0; bottom:0;
   width:50%;
-
+ clip-path: polygon(
+    0% 18%,
+    16% 7%,
+    35% 2%,
+    50% 0%,
+    65% 2%,
+    84% 7%,
+    100% 18%,
+    100% 100%,
+    0% 100%
+  );
+   
   background:
     radial-gradient(520px 360px at 50% 18%, rgba(255,230,180,.06), transparent 62%),
     /* plank seams */
