@@ -598,3 +598,77 @@ body{
   border-radius: inherit;
   opacity:.75;
 }
+/* ===== Door realism v4 (wide planks + irregularity) ===== */
+.door{
+  /* slight warping so it’s not perfectly straight */
+  transform: translateZ(0);
+  filter: contrast(1.14) saturate(1.08);
+
+  background:
+    /* uneven top light */
+    radial-gradient(900px 520px at 50% 16%, rgba(255,235,205,.07), transparent 62%),
+
+    /* FEWER, WIDER plank seams */
+    repeating-linear-gradient(
+      90deg,
+      rgba(0,0,0,.78) 0px,
+      rgba(0,0,0,.78) 3px,
+      rgba(0,0,0,0) 22px,
+      rgba(0,0,0,0) 118px
+    ),
+
+    /* bevel + depth per plank */
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,.09) 0px,
+      rgba(255,255,255,0) 18px,
+      rgba(0,0,0,.34) 96px,
+      rgba(0,0,0,0) 118px
+    ),
+
+    /* low-frequency grain waves */
+    repeating-linear-gradient(
+      11deg,
+      rgba(255,225,170,.030) 0px,
+      rgba(255,225,170,0) 14px,
+      rgba(0,0,0,.07) 28px
+    ),
+
+    linear-gradient(180deg, var(--woodA), var(--woodB));
+}
+
+/* Make the seam between door halves read deeper */
+.door-left{ box-shadow: inset -18px 0 28px rgba(0,0,0,.55); }
+.door-right{ box-shadow: inset  18px 0 28px rgba(0,0,0,.55); }
+}
+/* Iron bands + rivets overlay */
+.doors::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+
+  background:
+    /* bands */
+    linear-gradient(180deg,
+      rgba(0,0,0,0) 0%,
+      rgba(0,0,0,0) 14%,
+      rgba(25,25,28,.85) 14.6%,
+      rgba(25,25,28,.85) 16.2%,
+      rgba(0,0,0,0) 16.8%,
+      rgba(0,0,0,0) 46%,
+      rgba(25,25,28,.80) 46.6%,
+      rgba(25,25,28,.80) 48.2%,
+      rgba(0,0,0,0) 48.8%,
+      rgba(0,0,0,0) 100%
+    ),
+
+    /* rivets */
+    radial-gradient(circle at 18% 15.4%, rgba(220,220,225,.25) 0 3px, rgba(0,0,0,0) 4px),
+    radial-gradient(circle at 82% 15.4%, rgba(220,220,225,.25) 0 3px, rgba(0,0,0,0) 4px),
+    radial-gradient(circle at 18% 47.2%, rgba(220,220,225,.22) 0 3px, rgba(0,0,0,0) 4px),
+    radial-gradient(circle at 82% 47.2%, rgba(220,220,225,.22) 0 3px, rgba(0,0,0,0) 4px);
+
+  mix-blend-mode: multiply;
+  opacity:.78;
+}
