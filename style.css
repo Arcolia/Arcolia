@@ -565,3 +565,54 @@ body{
     radial-gradient(circle at 50% 45%, rgba(255,220,150,.06), rgba(0,0,0,0) 48%);
   background-blend-mode: screen;
 }
+/* =========================================================
+   SEALED CRACK (keep it, but subtle + believable)
+   Paste at very bottom of style.css
+   ========================================================= */
+
+/* Remove the strong “two halves” shading so it reads as one seal */
+.door-left{ box-shadow: none !important; }
+.door-right{ box-shadow: none !important; }
+
+/* Hairline crack: thin, dim, slightly irregular feeling */
+.seam-light{
+  width: 2px !important;                 /* thin crack */
+  opacity: .16 !important;               /* subtle */
+  filter: blur(.35px) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255,220,150,0),
+    rgba(255,210,140,.65),
+    rgba(255,220,150,0)
+  ) !important;
+  animation: seamPulse 7s ease-in-out infinite !important; /* slower = more “sealed” */
+}
+
+/* Dust glow around the crack (not a beam of light) */
+.seam-light::before{
+  width: 140px !important;
+  opacity: .18 !important;
+  filter: blur(18px) !important;
+}
+
+/* Optional: make the crack even less “perfect” by softening overall glow */
+.seam-light::after{
+  opacity: .35 !important;
+}
+
+/* Add heavy “stone weight” at the top so it feels ancient */
+.doors::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(120% 85% at 50% 0%,
+      rgba(0,0,0,.78) 0%,
+      rgba(0,0,0,0) 55%),
+    radial-gradient(240px 90px at 50% 8%,
+      rgba(0,0,0,.55),
+      rgba(0,0,0,0) 70%);
+  mix-blend-mode: multiply;
+  opacity:.92;
+}
