@@ -789,3 +789,33 @@ body{
 .gate-scene .doors .door{
   background: linear-gradient(180deg, #4b0082, #000) !important;
 }
+.vignette, .grain { display:none !important; }
+.doors::after { display:none !important; }
+}
+/* Sealed stone slabs (obvious change) */
+.door{
+  background:
+    linear-gradient(180deg, #1a1917, #0b0a09),
+
+    /* big horizontal slab joints */
+    repeating-linear-gradient(
+      180deg,
+      rgba(0,0,0,.92) 0px,
+      rgba(0,0,0,.92) 3px,
+      rgba(255,255,255,.06) 4px,
+      rgba(0,0,0,0) 34px,
+      rgba(0,0,0,0) 170px
+    ),
+
+    /* big blotches */
+    radial-gradient(320px 220px at 22% 38%, rgba(0,0,0,.35), transparent 72%),
+    radial-gradient(360px 260px at 72% 62%, rgba(0,0,0,.32), transparent 72%),
+
+    /* chisel noise */
+    repeating-linear-gradient(
+      14deg,
+      rgba(255,255,255,.05) 0px,
+      rgba(255,255,255,0) 12px,
+      rgba(0,0,0,.10) 24px
+    );
+}
