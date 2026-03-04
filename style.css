@@ -529,3 +529,9 @@ body{
     inset 0 80px 160px rgba(0,0,0,.62),
     inset 0 -60px 140px rgba(0,0,0,.55);
 }
+/* Let the stone read more clearly */
+.stone{
+  filter: contrast(1.18) saturate(1.0) brightness(1.08);
+}
+.stone::before{ opacity: .35; }   /* more block pattern */
+.stone::after{ opacity: .65; }    /* moss pops a bit */
