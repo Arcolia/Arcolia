@@ -672,8 +672,6 @@ body{
   mix-blend-mode: multiply;
   opacity:.78;
 }
-.door{ background: #ff00ff !important; }
-}
 /* Ancient sealed entrance: stone slabs + mortar joints */
 .door{
   background:
