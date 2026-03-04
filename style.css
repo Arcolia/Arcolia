@@ -535,3 +535,5 @@ body{
 }
 .stone::before{ opacity: .35; }   /* more block pattern */
 .stone::after{ opacity: .65; }    /* moss pops a bit */
+}
+.card{ outline: 6px solid red !important; }
