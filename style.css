@@ -523,3 +523,45 @@ body{
   .torch{ display:none; }
   .stone{ width: 42vw; }
 }
+/* Sealed = no visible split between halves */
+.door-left{ box-shadow: none !important; }
+.door-right{ box-shadow: none !important; }
+}
+/* Sealed seam: hairline crack, not a bright portal */
+.seam-light{
+  width: 2px !important;
+  opacity: .14 !important;
+  filter: blur(.4px) !important;
+  background: linear-gradient(180deg,
+    rgba(255,220,150,0),
+    rgba(255,210,140,.55),
+    rgba(255,220,150,0)
+  ) !important;
+}
+.seam-light::before{
+  width: 120px !important;
+  opacity: .20 !important;
+  filter: blur(16px) !important;
+}
+/* Stronger carved weight at the top of the seal */
+.doors::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(120% 85% at 50% 0%,
+      rgba(0,0,0,.78) 0%,
+      rgba(0,0,0,0) 55%),
+    radial-gradient(240px 90px at 50% 8%,
+      rgba(0,0,0,.55),
+      rgba(0,0,0,0) 70%);
+  mix-blend-mode: multiply;
+  opacity:.95;
+}
+/* Optional: faint central sigil */
+.doors{
+  background-image:
+    radial-gradient(circle at 50% 45%, rgba(255,220,150,.06), rgba(0,0,0,0) 48%);
+  background-blend-mode: screen;
+}
