@@ -721,3 +721,75 @@ body{
 .door-left{ box-shadow: inset -22px 0 30px rgba(0,0,0,.65); }
 .door-right{ box-shadow: inset  22px 0 30px rgba(0,0,0,.65); }
 .seam-light{ opacity: .55; }
+}
+/* =========================================================
+   SEALED STONE ENTRANCE v1 (adds real “detail”)
+   Paste at BOTTOM of style.css
+   ========================================================= */
+
+/* Reduce “light leaking” so it feels sealed */
+.seam-light { opacity: .30; filter: blur(1.2px); }
+
+/* Make the door read as stone slabs, not stripes */
+.door{
+  filter: contrast(1.18) saturate(.92) brightness(.98);
+
+  background:
+    /* 1) base stone */
+    linear-gradient(180deg, #1b1a18 0%, #0c0b0a 100%),
+
+    /* 2) horizontal slab joints (mortar lines) */
+    repeating-linear-gradient(
+      180deg,
+      rgba(0,0,0,.80) 0px,
+      rgba(0,0,0,.80) 2px,
+      rgba(255,255,255,.06) 3px,
+      rgba(0,0,0,0) 26px,
+      rgba(0,0,0,0) 112px
+    ),
+
+    /* 3) “chisel” micro-texture (breaks perfect smoothness) */
+    repeating-linear-gradient(
+      12deg,
+      rgba(255,255,255,.035) 0px,
+      rgba(255,255,255,0) 10px,
+      rgba(0,0,0,.06) 20px
+    ),
+
+    /* 4) blotches/age (big, irregular) */
+    radial-gradient(220px 160px at 22% 38%, rgba(0,0,0,.30), transparent 70%),
+    radial-gradient(280px 200px at 72% 62%, rgba(0,0,0,.26), transparent 72%),
+    radial-gradient(240px 180px at 55% 22%, rgba(255,255,255,.045), transparent 70%),
+
+    /* 5) overall lighting */
+    radial-gradient(900px 520px at 50% 18%, rgba(255,230,180,.06), transparent 62%);
+}
+
+/* Add “pitted stone” + cracks as overlays (real detail) */
+.door::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.65;
+  mix-blend-mode: overlay;
+  background:
+    /* pitting */
+    radial-gradient(circle at 18% 24%, rgba(255,255,255,.06) 0 1px, rgba(0,0,0,0) 2px),
+    radial-gradient(circle at 33% 58%, rgba(0,0,0,.12) 0 1px, rgba(0,0,0,0) 2px),
+    radial-gradient(circle at 66% 34%, rgba(255,255,255,.05) 0 1px, rgba(0,0,0,0) 2px),
+    radial-gradient(circle at 78% 72%, rgba(0,0,0,.12) 0 1px, rgba(0,0,0,0) 2px),
+    /* faint cracks */
+    repeating-linear-gradient(
+      135deg,
+      rgba(0,0,0,.10) 0px,
+      rgba(0,0,0,.10) 1px,
+      rgba(0,0,0,0) 10px,
+      rgba(0,0,0,0) 34px
+    );
+  filter: blur(.2px);
+}
+
+/* Deepen the join between halves (sealed block) */
+.door-left  { box-shadow: inset -28px 0 34px rgba(0,0,0,.70); }
+.door-right { box-shadow: inset  28px 0 34px rgba(0,0,0,.70); }
