@@ -47,7 +47,7 @@ html, body {
     position: absolute;
     inset: 0;
     background: 
-        linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 20%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,0) 45%),
+        linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 12%, rgba(0,0,0,0) 30%),
         radial-gradient(
             ellipse at center,
             transparent 0%,
@@ -77,8 +77,8 @@ html, body {
     align-items: center;
     width: 100%;
     max-width: 600px;
-    /* Position button at bottom */
-    bottom: 8%;
+    /* Position button to overlay image button */
+    bottom: 14%;
 }
 
 /* Typography - Hidden since image has embedded text */

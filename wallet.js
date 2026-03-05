@@ -15,14 +15,10 @@ const walletNetwork = document.getElementById('walletNetwork');
 const errorMessage = document.getElementById('errorMessage');
 const errorText = document.getElementById('errorText');
 
-// ARCO Token Configuration - UPDATE THIS WITH YOUR ACTUAL TOKEN ADDRESS
+// ARCO Token Configuration
 const ARCO_TOKEN_CONFIG = {
-    // Ethereum Mainnet ARCO token address (replace with actual)
-    1: '0x0000000000000000000000000000000000000000',
-    // Sepolia Testnet (for testing)
-    11155111: '0x0000000000000000000000000000000000000000',
-    // Polygon
-    137: '0x0000000000000000000000000000000000000000',
+    // Polygon Mainnet - ARCO token
+    137: '0x6a931530fb7946dC95fd9d7245157661D7B0B375',
 };
 
 // Minimum ARCO tokens required to enter (in token units, considering decimals)
