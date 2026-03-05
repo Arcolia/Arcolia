@@ -46,12 +46,14 @@ html, body {
 .background-overlay {
     position: absolute;
     inset: 0;
-    background: radial-gradient(
-        ellipse at center,
-        transparent 0%,
-        rgba(0, 0, 0, 0.2) 50%,
-        rgba(0, 0, 0, 0.5) 100%
-    );
+    background: 
+        linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 20%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,0) 45%),
+        radial-gradient(
+            ellipse at center,
+            transparent 0%,
+            rgba(0, 0, 0, 0.2) 50%,
+            rgba(0, 0, 0, 0.5) 100%
+        );
     pointer-events: none;
 }
 
@@ -75,8 +77,8 @@ html, body {
     align-items: center;
     width: 100%;
     max-width: 600px;
-    /* Position to overlay image button */
-    bottom: 12%;
+    /* Position button at bottom */
+    bottom: 8%;
 }
 
 /* Typography - Hidden since image has embedded text */
@@ -90,31 +92,48 @@ html, body {
     display: none;
 }
 
-/* Enter Button - Invisible but clickable overlay */
+/* Enter Button - Visible golden button matching image style */
 .enter-button {
     font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     font-weight: 500;
     letter-spacing: 0.08em;
     padding: 14px 38px;
-    background: transparent;
+    background: linear-gradient(
+        180deg,
+        #d9c17a 0%,
+        #c9a962 20%,
+        #b89b52 60%,
+        #a68b4b 100%
+    );
     border: none;
     border-radius: 8px;
-    color: transparent;
+    color: #1a1408;
     cursor: pointer;
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
     transition: all 0.3s ease;
-    margin-bottom: 30px;
-    /* Match exact size of image button */
     min-width: 160px;
-    min-height: 48px;
 }
 
 .enter-button:hover {
-    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 
+        0 6px 20px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 0 25px rgba(201, 169, 98, 0.25);
+    background: linear-gradient(
+        180deg,
+        #e5cc88 0%,
+        #d4b978 20%,
+        #c9a962 60%,
+        #b89b52 100%
+    );
 }
 
 .enter-button:active {
-    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(0);
 }
 
 /* Wallet Section */
