@@ -1,4 +1,4 @@
-// Arcolia Wallet Connection Script
+// Arcolia Wallet Connection Script with ARCO Token Gating
 const { ethers } = window;
 
 // DOM Elements
@@ -15,11 +15,33 @@ const walletNetwork = document.getElementById('walletNetwork');
 const errorMessage = document.getElementById('errorMessage');
 const errorText = document.getElementById('errorText');
 
+// ARCO Token Configuration - UPDATE THIS WITH YOUR ACTUAL TOKEN ADDRESS
+const ARCO_TOKEN_CONFIG = {
+    // Ethereum Mainnet ARCO token address (replace with actual)
+    1: '0x0000000000000000000000000000000000000000',
+    // Sepolia Testnet (for testing)
+    11155111: '0x0000000000000000000000000000000000000000',
+    // Polygon
+    137: '0x0000000000000000000000000000000000000000',
+};
+
+// Minimum ARCO tokens required to enter (in token units, considering decimals)
+const MIN_ARCO_REQUIRED = 1;
+
+// ERC20 ABI for balance checking
+const ERC20_ABI = [
+    'function balanceOf(address owner) view returns (uint256)',
+    'function decimals() view returns (uint8)',
+    'function symbol() view returns (string)'
+];
+
 // State
 let provider = null;
 let signer = null;
 let userAddress = null;
 let chainId = null;
+let arcoBalance = 0;
+let hasEnteredGate = false;
 
 // Network mappings
 const NETWORKS = {
@@ -38,7 +60,7 @@ const NETWORKS = {
  */
 document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
-    checkExistingConnection();
+    // Don't auto-check connection - wait for user to click Enter
 });
 
 /**
@@ -66,6 +88,8 @@ function setupEventListeners() {
  * Handle Enter Arcolia button click
  */
 function handleEnterClick() {
+    hasEnteredGate = true;
+    
     // Hide the enter button
     enterButton.style.display = 'none';
     
@@ -75,37 +99,10 @@ function handleEnterClick() {
     // Check if MetaMask is installed
     if (!window.ethereum) {
         showError('MetaMask is not installed. Please install it from metamask.io');
-        connectWalletBtn.textContent = 'Install MetaMask';
-        connectWalletBtn.addEventListener('click', () => {
+        connectWalletBtn.innerHTML = 'Install MetaMask';
+        connectWalletBtn.onclick = () => {
             window.open('https://metamask.io/download/', '_blank');
-        }, { once: true });
-    }
-}
-
-/**
- * Check for existing wallet connection
- */
-async function checkExistingConnection() {
-    if (!window.ethereum) return;
-    
-    try {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        if (accounts.length > 0) {
-            userAddress = accounts[0];
-            provider = new ethers.BrowserProvider(window.ethereum);
-            signer = await provider.getSigner();
-            
-            const network = await provider.getNetwork();
-            chainId = Number(network.chainId);
-            
-            // Auto-show wallet section if already connected
-            enterButton.style.display = 'none';
-            walletSection.classList.add('active');
-            await updateWalletDisplay();
-            showWalletConnected();
-        }
-    } catch (error) {
-        console.error('Error checking existing connection:', error);
+        };
     }
 }
 
@@ -136,9 +133,18 @@ async function connectWallet() {
         const network = await provider.getNetwork();
         chainId = Number(network.chainId);
         
-        // Update UI
+        // Update wallet display first
         await updateWalletDisplay();
-        showWalletConnected();
+        
+        // Check ARCO token balance
+        const hasAccess = await checkArcoTokenAccess();
+        
+        if (hasAccess) {
+            showWalletConnected();
+            showAccessGranted();
+        } else {
+            showAccessDenied();
+        }
         
     } catch (error) {
         console.error('Connection error:', error);
@@ -156,6 +162,74 @@ async function connectWallet() {
 }
 
 /**
+ * Check if user holds ARCO tokens
+ */
+async function checkArcoTokenAccess() {
+    try {
+        const tokenAddress = ARCO_TOKEN_CONFIG[chainId];
+        
+        // If no token address configured for this network, allow access (for demo)
+        if (!tokenAddress || tokenAddress === '0x0000000000000000000000000000000000000000') {
+            console.log('ARCO token not configured for this network. Demo mode: allowing access.');
+            arcoBalance = 'Demo Mode';
+            return true; // Demo mode - allow access
+        }
+        
+        const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
+        
+        // Get token balance
+        const balance = await tokenContract.balanceOf(userAddress);
+        const decimals = await tokenContract.decimals();
+        
+        // Convert to human-readable format
+        arcoBalance = parseFloat(ethers.formatUnits(balance, decimals));
+        
+        console.log(`ARCO Balance: ${arcoBalance}`);
+        
+        return arcoBalance >= MIN_ARCO_REQUIRED;
+        
+    } catch (error) {
+        console.error('Error checking ARCO balance:', error);
+        // If error reading token, allow access in demo mode
+        arcoBalance = 'Check Failed';
+        return true; // Fail open for demo
+    }
+}
+
+/**
+ * Show access granted UI
+ */
+function showAccessGranted() {
+    // Add ARCO balance to display
+    const arcoDisplay = document.getElementById('arcoBalance');
+    if (arcoDisplay) {
+        arcoDisplay.textContent = `ARCO: ${arcoBalance}`;
+        arcoDisplay.style.color = '#4ade80';
+    }
+    
+    // Update status
+    walletStatus.classList.add('connected');
+    walletStatus.classList.add('access-granted');
+    statusText.innerHTML = '✓ Access Granted - Welcome to Arcolia';
+}
+
+/**
+ * Show access denied UI
+ */
+function showAccessDenied() {
+    walletStatus.classList.add('connected');
+    walletStatus.classList.add('access-denied');
+    statusText.innerHTML = `✗ Access Denied - You need at least ${MIN_ARCO_REQUIRED} ARCO tokens`;
+    
+    // Show info but with denied styling
+    walletInfo.style.display = 'flex';
+    disconnectBtn.style.display = 'flex';
+    connectWalletBtn.style.display = 'none';
+    
+    showError(`You need to hold at least ${MIN_ARCO_REQUIRED} ARCO token(s) to enter Arcolia. Current balance: ${arcoBalance}`);
+}
+
+/**
  * Disconnect wallet
  */
 function disconnectWallet() {
@@ -163,6 +237,7 @@ function disconnectWallet() {
     signer = null;
     provider = null;
     chainId = null;
+    arcoBalance = 0;
     
     // Reset UI
     walletInfo.style.display = 'none';
@@ -170,11 +245,10 @@ function disconnectWallet() {
     connectWalletBtn.style.display = 'flex';
     resetConnectButton();
     
-    walletStatus.classList.remove('connected');
+    walletStatus.classList.remove('connected', 'access-granted', 'access-denied');
     statusText.textContent = 'Connect your wallet to enter';
     
-    showError('Wallet disconnected');
-    setTimeout(hideError, 3000);
+    hideError();
 }
 
 /**
@@ -241,9 +315,17 @@ function resetConnectButton() {
 async function handleAccountsChanged(accounts) {
     if (accounts.length === 0) {
         disconnectWallet();
-    } else {
+    } else if (hasEnteredGate) {
         userAddress = accounts[0];
         await updateWalletDisplay();
+        
+        // Re-check token access
+        const hasAccess = await checkArcoTokenAccess();
+        if (hasAccess) {
+            showAccessGranted();
+        } else {
+            showAccessDenied();
+        }
     }
 }
 
@@ -252,9 +334,17 @@ async function handleAccountsChanged(accounts) {
  */
 async function handleChainChanged(chainIdHex) {
     chainId = parseInt(chainIdHex, 16);
-    if (userAddress) {
+    if (userAddress && hasEnteredGate) {
         provider = new ethers.BrowserProvider(window.ethereum);
         await updateWalletDisplay();
+        
+        // Re-check token access on new network
+        const hasAccess = await checkArcoTokenAccess();
+        if (hasAccess) {
+            showAccessGranted();
+        } else {
+            showAccessDenied();
+        }
     }
 }
 

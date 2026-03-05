@@ -40,7 +40,7 @@ html, body {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
+    object-position: center top;
 }
 
 .background-overlay {
@@ -69,14 +69,14 @@ html, body {
 }
 
 .content-wrapper {
+    position: absolute;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end;
     width: 100%;
     max-width: 600px;
-    height: 100%;
-    padding-bottom: 28vh;
+    /* Position to overlay image button */
+    bottom: 12%;
 }
 
 /* Typography - Hidden since image has embedded text */
@@ -90,31 +90,31 @@ html, body {
     display: none;
 }
 
-/* Enter Button - Transparent overlay on image button */
+/* Enter Button - Invisible but clickable overlay */
 .enter-button {
     font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 500;
-    letter-spacing: 0.1em;
-    padding: 14px 40px;
+    letter-spacing: 0.08em;
+    padding: 14px 38px;
     background: transparent;
     border: none;
+    border-radius: 8px;
     color: transparent;
     cursor: pointer;
     transition: all 0.3s ease;
     margin-bottom: 30px;
-    position: relative;
-    width: 180px;
-    height: 50px;
+    /* Match exact size of image button */
+    min-width: 160px;
+    min-height: 48px;
 }
 
 .enter-button:hover {
-    transform: scale(1.02);
-    filter: brightness(1.1);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .enter-button:active {
-    transform: scale(0.98);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 /* Wallet Section */
@@ -126,15 +126,30 @@ html, body {
     width: 100%;
     max-width: 360px;
     padding: 24px;
-    background: rgba(10, 10, 10, 0.85);
+    background: rgba(10, 10, 10, 0.95);
     border: 1px solid rgba(201, 169, 98, 0.3);
     border-radius: 12px;
     backdrop-filter: blur(10px);
     animation: fadeIn 0.4s ease-out;
+    position: relative;
+    z-index: 20;
 }
 
 .wallet-section.active {
     display: flex;
+}
+
+/* Cover the image button when wallet section is active */
+.wallet-section.active::after {
+    content: '';
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 35vh;
+    background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 60%, transparent 100%);
+    z-index: -1;
+    pointer-events: none;
 }
 
 @keyframes fadeIn {
@@ -162,6 +177,18 @@ html, body {
     color: var(--success-green);
     background: rgba(74, 222, 128, 0.1);
     border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.wallet-status.access-granted {
+    color: var(--success-green);
+    background: rgba(74, 222, 128, 0.15);
+    border: 1px solid rgba(74, 222, 128, 0.4);
+}
+
+.wallet-status.access-denied {
+    color: var(--error-red);
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.3);
 }
 
 /* Wallet Button */
@@ -243,10 +270,16 @@ html, body {
 }
 
 .wallet-balance,
-.wallet-network {
+.wallet-network,
+.arco-balance {
     font-size: 0.85rem;
     color: var(--text-muted);
     text-align: center;
+}
+
+.arco-balance {
+    color: var(--gold-light);
+    font-weight: 500;
 }
 
 /* Error Message */
