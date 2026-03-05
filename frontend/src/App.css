@@ -47,7 +47,7 @@ html, body, #root, .app {
   position: absolute;
   inset: 0;
   background: 
-    linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 12%, rgba(0,0,0,0) 30%),
+    linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 15%, rgba(0,0,0,0) 35%),
     radial-gradient(
       ellipse at center,
       transparent 0%,
@@ -77,7 +77,7 @@ html, body, #root, .app {
   align-items: center;
   width: 100%;
   max-width: 600px;
-  bottom: 14%;
+  bottom: 18%;
 }
 
 /* Enter Button */
@@ -302,5 +302,20 @@ html, body, #root, .app {
 @media (max-width: 600px) {
   .wallet-section {
     padding: 20px 16px;
+  }
+  
+  .background-overlay {
+    background: 
+      linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 18%, rgba(0,0,0,0.7) 28%, rgba(0,0,0,0) 45%),
+      radial-gradient(
+        ellipse at center,
+        transparent 0%,
+        rgba(0, 0, 0, 0.2) 50%,
+        rgba(0, 0, 0, 0.5) 100%
+      );
+  }
+  
+  .content-wrapper {
+    bottom: 8%;
   }
 }
