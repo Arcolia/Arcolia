@@ -120,11 +120,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 24px 40px;
+  gap: 8px;
+  padding: 16px 28px;
   background: rgba(0, 0, 0, 0.75);
   border: 1px solid rgba(201, 169, 98, 0.4);
-  border-radius: 12px;
+  border-radius: 10px;
   backdrop-filter: blur(10px);
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.5),
@@ -137,20 +137,20 @@
 
 .status-badge {
   font-family: 'Cinzel', Georgia, serif;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #d4b978;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
-  padding: 6px 16px;
+  letter-spacing: 0.15em;
+  padding: 4px 12px;
   background: linear-gradient(135deg, rgba(201, 169, 98, 0.2) 0%, rgba(166, 139, 75, 0.1) 100%);
   border: 1px solid rgba(201, 169, 98, 0.4);
-  border-radius: 20px;
+  border-radius: 16px;
 }
 
 .member-username {
   font-family: 'SF Mono', 'Fira Code', monospace;
-  font-size: 1rem;
+  font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.9);
   letter-spacing: 0.05em;
 }
@@ -158,26 +158,26 @@
 .token-balance {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
+  gap: 6px;
+  padding: 6px 14px;
   background: rgba(201, 169, 98, 0.1);
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .token-icon {
-  font-size: 1.2rem;
+  font-size: 1rem;
   color: #d4b978;
 }
 
 .balance-amount {
   font-family: 'Cinzel', Georgia, serif;
-  font-size: 1.4rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #e5cc88;
 }
 
 .token-name {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.6);
   letter-spacing: 0.1em;
 }

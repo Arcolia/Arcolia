@@ -21,8 +21,8 @@ function GuildHall({ userAddress, arcoBalance, onLeaveGuild }) {
     // For now, show alert for areas under development
     if (area === 'library') {
       alert('The Library is under construction. Coming soon!');
-    } else if (area === 'throne') {
-      alert('The Throne Room awaits. Coming soon!');
+    } else if (area === 'treasury') {
+      alert('The Treasury awaits. Coming soon!');
     }
   };
 
@@ -61,11 +61,11 @@ function GuildHall({ userAddress, arcoBalance, onLeaveGuild }) {
         
         <button 
           className="coming-soon-btn right"
-          onClick={() => handleComingSoon('right-archive')}
+          onClick={() => handleComingSoon('throne-room')}
           data-testid="coming-soon-right"
         >
           <span className="lock-icon">🔒</span>
-          <span className="area-name">Sanctum</span>
+          <span className="area-name">Throne Room</span>
           <span className="coming-soon-text">Coming Soon</span>
         </button>
       </div>
@@ -103,12 +103,12 @@ function GuildHall({ userAddress, arcoBalance, onLeaveGuild }) {
 
         <button 
           className="nav-area-btn throne"
-          onClick={() => handleNavigation('throne')}
-          data-testid="nav-throne"
+          onClick={() => handleNavigation('treasury')}
+          data-testid="nav-treasury"
         >
-          <span className="nav-icon">👑</span>
-          <span className="nav-name">Throne Room</span>
-          <span className="nav-hint">Council & Treasury</span>
+          <span className="nav-icon">💰</span>
+          <span className="nav-name">Treasury</span>
+          <span className="nav-hint">Guild wealth</span>
         </button>
       </div>
 
