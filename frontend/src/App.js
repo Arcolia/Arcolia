@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { WagmiProvider, useAccount, useDisconnect, useChainId, useBalance } from 'wagmi';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useWeb3Modal } from '@web3modal/wagmi/react';
+import { polygon } from 'wagmi/chains';
 import { ethers } from 'ethers';
+import { wagmiConfig } from './walletConfig';
 import GuildHall from './GuildHall';
 import './App.css';
 
-// Check for test mode via URL param
-const urlParams = new URLSearchParams(window.location.search);
-const testMode = urlParams.get('test') === 'guild';
-const testWrongNetwork = urlParams.get('test') === 'wrongnet';
+const queryClient = new QueryClient();
 
 // ARCO Token Configuration
-const ARCO_TOKEN_CONFIG = {
-  137: '0x6D00EABF782Df498738f29e6558157d36518C663',
-};
-
+const ARCO_TOKEN_ADDRESS = '0x6D00EABF782Df498738f29e6558157d36518C663';
 const MIN_ARCO_REQUIRED = 1;
 
 const ERC20_ABI = [
@@ -21,229 +20,85 @@ const ERC20_ABI = [
   'function symbol() view returns (string)'
 ];
 
-const NETWORKS = {
-  1: { name: 'Ethereum Mainnet', symbol: 'ETH' },
-  5: { name: 'Goerli Testnet', symbol: 'ETH' },
-  11155111: { name: 'Sepolia Testnet', symbol: 'ETH' },
-  42161: { name: 'Arbitrum One', symbol: 'ETH' },
-  10: { name: 'Optimism', symbol: 'ETH' },
-  137: { name: 'Polygon', symbol: 'MATIC' },
-  56: { name: 'BNB Chain', symbol: 'BNB' },
-  43114: { name: 'Avalanche', symbol: 'AVAX' },
-};
-
+// Main App wrapper with providers
 function App() {
-  // View state: 'gate' | 'guild'
-  const [currentView, setCurrentView] = useState(testMode ? 'guild' : 'gate');
-  
-  // For test mode, set demo values
-  const [hasEnteredGate, setHasEnteredGate] = useState(testMode || testWrongNetwork);
-  const [provider, setProvider] = useState(null);
-  const [userAddress, setUserAddress] = useState((testMode || testWrongNetwork) ? '0x1234567890abcdef1234567890abcdef12345678' : null);
-  const [chainId, setChainId] = useState(testMode ? 137 : (testWrongNetwork ? 1 : null));
-  const [balance, setBalance] = useState((testMode || testWrongNetwork) ? '10.5' : null);
-  const [arcoBalance, setArcoBalance] = useState(testMode ? 1250 : null);
-  const [accessGranted, setAccessGranted] = useState(testMode);
-  const [error, setError] = useState(testWrongNetwork ? 'Please switch to Polygon network to check your ARCO balance' : null);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [hasMetaMask, setHasMetaMask] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
+  return (
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <ArcoliaApp />
+      </QueryClientProvider>
+    </WagmiProvider>
+  );
+}
 
+// Inner app component with wallet logic
+function ArcoliaApp() {
+  const { open } = useWeb3Modal();
+  const { address, isConnected, isConnecting } = useAccount();
+  const { disconnect } = useDisconnect();
+  const chainId = useChainId();
+  const { data: balanceData } = useBalance({ address });
+
+  const [currentView, setCurrentView] = useState('gate');
+  const [hasEnteredGate, setHasEnteredGate] = useState(false);
+  const [arcoBalance, setArcoBalance] = useState(null);
+  const [accessGranted, setAccessGranted] = useState(false);
+  const [error, setError] = useState(null);
+  const [isCheckingAccess, setIsCheckingAccess] = useState(false);
+
+  // Check ARCO balance when connected
   useEffect(() => {
-    // Check if mobile device - more comprehensive detection
-    const checkMobile = () => {
-      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-      const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet/i;
-      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-      const isSmallScreen = window.innerWidth <= 768;
-      return mobileRegex.test(userAgent.toLowerCase()) || (isTouchDevice && isSmallScreen);
-    };
-    
-    const mobile = checkMobile();
-    setIsMobile(mobile);
-    console.log('Is mobile device:', mobile, 'UserAgent:', navigator.userAgent);
-    
-    if (!window.ethereum) {
-      setHasMetaMask(false);
-      console.log('MetaMask not detected (window.ethereum is undefined)');
-    } else {
-      console.log('MetaMask detected');
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', handleChainChanged);
+    if (isConnected && address && chainId === polygon.id) {
+      checkArcoBalance();
+    } else if (isConnected && chainId !== polygon.id) {
+      setError('Please switch to Polygon network');
+      setArcoBalance(null);
+      setAccessGranted(false);
     }
-    return () => {
-      if (window.ethereum) {
-        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-        window.ethereum.removeListener('chainChanged', handleChainChanged);
+  }, [isConnected, address, chainId]);
+
+  const checkArcoBalance = async () => {
+    if (!address) return;
+    
+    setIsCheckingAccess(true);
+    setError(null);
+    
+    try {
+      // Use a public Polygon RPC
+      const provider = new ethers.JsonRpcProvider('https://polygon-rpc.com');
+      const tokenContract = new ethers.Contract(ARCO_TOKEN_ADDRESS, ERC20_ABI, provider);
+      
+      const balance = await tokenContract.balanceOf(address);
+      const decimals = await tokenContract.decimals();
+      const formattedBalance = parseFloat(ethers.formatUnits(balance, decimals));
+      
+      console.log('ARCO Balance:', formattedBalance);
+      setArcoBalance(formattedBalance);
+      setAccessGranted(formattedBalance >= MIN_ARCO_REQUIRED);
+      
+      if (formattedBalance < MIN_ARCO_REQUIRED) {
+        setError(`You need at least ${MIN_ARCO_REQUIRED} ARCO token to enter`);
       }
-    };
-  }, []);
-
-  const handleAccountsChanged = async (accounts) => {
-    if (accounts.length === 0) {
-      disconnectWallet();
-    } else if (hasEnteredGate) {
-      setUserAddress(accounts[0]);
-      await updateWalletInfo(accounts[0]);
+    } catch (err) {
+      console.error('Error checking ARCO balance:', err);
+      setError('Could not verify ARCO balance. Please try again.');
+      setArcoBalance(null);
+      setAccessGranted(false);
+    } finally {
+      setIsCheckingAccess(false);
     }
-  };
-
-  const handleChainChanged = () => {
-    window.location.reload();
   };
 
   const handleEnterClick = () => {
     setHasEnteredGate(true);
-    if (!window.ethereum) {
-      if (isMobile) {
-        setError('Tap "Open in MetaMask" to connect your wallet');
-      } else {
-        setError('MetaMask is not installed. Please install it from metamask.io');
-      }
-    }
   };
 
-  const openInMetaMaskBrowser = () => {
-    // Get current URL without protocol
-    const currentUrl = window.location.href.replace(/^https?:\/\//, '');
-    // MetaMask deep link to open in their in-app browser
-    const metamaskDeepLink = `https://metamask.app.link/dapp/${currentUrl}`;
-    window.location.href = metamaskDeepLink;
+  const handleConnectWallet = () => {
+    open();
   };
 
-  const connectWallet = async () => {
-    if (!window.ethereum) {
-      if (isMobile) {
-        // On mobile, open in MetaMask browser
-        openInMetaMaskBrowser();
-        return;
-      }
-      window.open('https://metamask.io/download/', '_blank');
-      return;
-    }
-
-    try {
-      setError(null);
-      setIsConnecting(true);
-
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const newProvider = new ethers.BrowserProvider(window.ethereum);
-      const network = await newProvider.getNetwork();
-      
-      setProvider(newProvider);
-      setUserAddress(accounts[0]);
-      setChainId(Number(network.chainId));
-
-      await updateWalletInfo(accounts[0], newProvider, Number(network.chainId));
-
-    } catch (err) {
-      if (err.code === -32002) {
-        setError('Connection request pending. Check your MetaMask extension.');
-      } else if (err.code === 4001) {
-        setError('Connection rejected. Please try again.');
-      } else {
-        setError(`Connection failed: ${err.message || 'Unknown error'}`);
-      }
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  const updateWalletInfo = async (address, prov = provider, chain = chainId) => {
-    if (!address || !prov) return;
-
-    try {
-      const bal = await prov.getBalance(address);
-      setBalance(ethers.formatEther(bal));
-
-      const hasAccess = await checkArcoTokenAccess(address, prov, chain);
-      setAccessGranted(hasAccess);
-    } catch (err) {
-      console.error('Error updating wallet info:', err);
-    }
-  };
-
-  const checkArcoTokenAccess = async (address, prov, chain) => {
-    try {
-      console.log('Checking ARCO access for:', address, 'on chain:', chain);
-      
-      const tokenAddress = ARCO_TOKEN_CONFIG[chain];
-
-      if (!tokenAddress) {
-        console.log('ARCO token not configured for chain:', chain);
-        setArcoBalance(null);
-        setError(`Please switch to Polygon network (you're on chain ${chain})`);
-        return false;
-      }
-
-      console.log('Token address:', tokenAddress);
-      const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, prov);
-      
-      try {
-        const bal = await tokenContract.balanceOf(address);
-        console.log('Raw balance:', bal.toString());
-        
-        const decimals = await tokenContract.decimals();
-        console.log('Decimals:', decimals);
-        
-        const formattedBalance = parseFloat(ethers.formatUnits(bal, decimals));
-        console.log('Formatted balance:', formattedBalance);
-        
-        setArcoBalance(formattedBalance);
-        setError(null);
-        return formattedBalance >= MIN_ARCO_REQUIRED;
-      } catch (contractError) {
-        console.error('Contract call error:', contractError);
-        // Token might not exist or wrong address
-        setArcoBalance(0);
-        setError('Could not read ARCO balance. Make sure you are on Polygon network.');
-        return false;
-      }
-
-    } catch (err) {
-      console.error('Error checking ARCO balance:', err);
-      setArcoBalance(0);
-      setError('Error checking ARCO balance: ' + (err.message || 'Unknown error'));
-      return false;
-    }
-  };
-
-  const switchToPolygon = async () => {
-    if (!window.ethereum) return;
-    
-    try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x89' }], // 137 in hex
-      });
-    } catch (switchError) {
-      // Chain not added, try to add it
-      if (switchError.code === 4902) {
-        try {
-          await window.ethereum.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-              chainId: '0x89',
-              chainName: 'Polygon Mainnet',
-              nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
-              rpcUrls: ['https://polygon-rpc.com/'],
-              blockExplorerUrls: ['https://polygonscan.com/'],
-            }],
-          });
-        } catch (addError) {
-          setError('Failed to add Polygon network. Please add it manually.');
-        }
-      } else {
-        setError('Failed to switch network. Please switch to Polygon manually.');
-      }
-    }
-  };
-
-  const disconnectWallet = () => {
-    setUserAddress(null);
-    setProvider(null);
-    setChainId(null);
-    setBalance(null);
+  const handleDisconnect = () => {
+    disconnect();
     setArcoBalance(null);
     setAccessGranted(false);
     setError(null);
@@ -259,27 +114,29 @@ function App() {
 
   const leaveGuild = () => {
     setCurrentView('gate');
-    setHasEnteredGate(true); // Keep wallet section visible
+    setHasEnteredGate(true);
   };
 
   const formatAddress = (addr) => {
+    if (!addr) return '';
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
   };
 
-  const networkInfo = NETWORKS[chainId] || { name: `Network ${chainId}`, symbol: 'ETH' };
+  const isOnPolygon = chainId === polygon.id;
+  const nativeBalance = balanceData ? parseFloat(balanceData.formatted).toFixed(4) : '0';
 
-  // Show Guild Hall if user has entered
+  // Show Guild Hall
   if (currentView === 'guild') {
     return (
       <GuildHall 
-        userAddress={userAddress}
+        userAddress={address}
         arcoBalance={arcoBalance}
         onLeaveGuild={leaveGuild}
       />
     );
   }
 
-  // Show Gate (Landing Page)
+  // Show Gate
   return (
     <div className="app">
       <div className="background-container">
@@ -302,65 +159,45 @@ function App() {
               Enter Arcolia
             </button>
           ) : (
-            <div className={`wallet-section active`} data-testid="wallet-section">
-              <div className={`wallet-status ${userAddress ? (accessGranted ? 'access-granted' : 'access-denied') : ''}`}>
+            <div className="wallet-section active" data-testid="wallet-section">
+              {/* Status */}
+              <div className={`wallet-status ${isConnected ? (accessGranted ? 'access-granted' : 'access-denied') : ''}`}>
                 <span>
-                  {!userAddress 
+                  {!isConnected 
                     ? 'Connect your wallet to enter' 
-                    : accessGranted 
-                      ? '✓ Access Granted - Welcome to Arcolia'
-                      : chainId !== 137
-                        ? `✗ Wrong Network - Please switch to Polygon (Currently on ${networkInfo.name})`
-                        : `✗ Access Denied - You need at least ${MIN_ARCO_REQUIRED} ARCO tokens`
+                    : isCheckingAccess
+                      ? 'Checking ARCO balance...'
+                      : !isOnPolygon
+                        ? '⚠️ Please switch to Polygon network'
+                        : accessGranted 
+                          ? '✓ Access Granted - Welcome to Arcolia'
+                          : `✗ Access Denied - You need ${MIN_ARCO_REQUIRED} ARCO`
                   }
                 </span>
               </div>
 
-              {!userAddress ? (
+              {/* Connect/Action Buttons */}
+              {!isConnected ? (
                 <button 
                   className="wallet-button"
-                  onClick={connectWallet}
-                  disabled={isConnecting}
+                  onClick={handleConnectWallet}
                   data-testid="connect-wallet-btn"
                 >
-                  {isConnecting ? (
-                    'Connecting...'
-                  ) : !hasMetaMask && isMobile ? (
-                    <>
-                      <svg className="metamask-icon" viewBox="0 0 24 24" fill="none">
-                        <path d="M21.37 3L13.06 9.24L14.57 5.52L21.37 3Z" fill="#E17726"/>
-                        <path d="M2.63 3L10.87 9.3L9.43 5.52L2.63 3Z" fill="#E27625"/>
-                        <path d="M18.44 16.16L16.31 19.5L20.92 20.77L22.24 16.23L18.44 16.16Z" fill="#E27625"/>
-                        <path d="M1.77 16.23L3.08 20.77L7.69 19.5L5.56 16.16L1.77 16.23Z" fill="#E27625"/>
-                      </svg>
-                      Open in MetaMask
-                    </>
-                  ) : !hasMetaMask ? (
-                    'Install MetaMask'
-                  ) : (
-                    <>
-                      <svg className="metamask-icon" viewBox="0 0 24 24" fill="none">
-                        <path d="M21.37 3L13.06 9.24L14.57 5.52L21.37 3Z" fill="#E17726"/>
-                        <path d="M2.63 3L10.87 9.3L9.43 5.52L2.63 3Z" fill="#E27625"/>
-                        <path d="M18.44 16.16L16.31 19.5L20.92 20.77L22.24 16.23L18.44 16.16Z" fill="#E27625"/>
-                        <path d="M1.77 16.23L3.08 20.77L7.69 19.5L5.56 16.16L1.77 16.23Z" fill="#E27625"/>
-                      </svg>
-                      Connect MetaMask
-                    </>
-                  )}
+                  🔗 Connect Wallet
                 </button>
               ) : (
                 <>
-                  {(chainId === null || chainId !== 137) && (
+                  {!isOnPolygon && (
                     <button 
                       className="wallet-button switch-network"
-                      onClick={switchToPolygon}
+                      onClick={() => open({ view: 'Networks' })}
                       data-testid="switch-network-btn"
                     >
-                      🔗 Switch to Polygon Network
+                      🔗 Switch to Polygon
                     </button>
                   )}
-                  {accessGranted && chainId === 137 && (
+                  
+                  {accessGranted && isOnPolygon && (
                     <button 
                       className="wallet-button enter-guild"
                       onClick={enterGuildHall}
@@ -369,9 +206,10 @@ function App() {
                       Enter the Guild Hall
                     </button>
                   )}
+                  
                   <button 
                     className="wallet-button secondary"
-                    onClick={disconnectWallet}
+                    onClick={handleDisconnect}
                     data-testid="disconnect-wallet-btn"
                   >
                     Disconnect
@@ -379,19 +217,25 @@ function App() {
                 </>
               )}
 
-              {userAddress && (
+              {/* Wallet Info */}
+              {isConnected && (
                 <div className="wallet-info" data-testid="wallet-info">
-                  <div className="wallet-address">{formatAddress(userAddress)}</div>
-                  <div className="wallet-balance">Balance: {parseFloat(balance || 0).toFixed(4)} {networkInfo.symbol}</div>
-                  {arcoBalance !== null && typeof arcoBalance === 'number' && (
+                  <div className="wallet-address">{formatAddress(address)}</div>
+                  <div className="wallet-balance">
+                    Balance: {nativeBalance} {isOnPolygon ? 'MATIC' : 'ETH'}
+                  </div>
+                  {arcoBalance !== null && (
                     <div className={`arco-balance ${accessGranted ? 'granted' : 'denied'}`}>
                       ARCO: {arcoBalance.toLocaleString()}
                     </div>
                   )}
-                  <div className="wallet-network">{networkInfo.name}</div>
+                  <div className="wallet-network">
+                    {isOnPolygon ? 'Polygon' : `Chain ${chainId}`}
+                  </div>
                 </div>
               )}
 
+              {/* Error Message */}
               {error && (
                 <div className="error-message" data-testid="error-message">
                   {error}
@@ -401,6 +245,52 @@ function App() {
           )}
         </div>
       </main>
+
+      {/* Install PWA prompt for mobile */}
+      <InstallPrompt />
+    </div>
+  );
+}
+
+// PWA Install Prompt Component
+function InstallPrompt() {
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      
+      // Show prompt after a delay if not already installed
+      setTimeout(() => {
+        if (!window.matchMedia('(display-mode: standalone)').matches) {
+          setShowPrompt(true);
+        }
+      }, 3000);
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log('Install outcome:', outcome);
+    setDeferredPrompt(null);
+    setShowPrompt(false);
+  };
+
+  if (!showPrompt) return null;
+
+  return (
+    <div className="install-prompt">
+      <p>Install Arcolia for quick access</p>
+      <button onClick={handleInstall}>Install App</button>
+      <button onClick={() => setShowPrompt(false)}>Not now</button>
     </div>
   );
 }
