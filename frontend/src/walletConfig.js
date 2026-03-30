@@ -2,9 +2,8 @@ import { createWeb3Modal } from '@web3modal/wagmi/react'
 import { defaultWagmiConfig } from '@web3modal/wagmi/react/config'
 import { polygon } from 'wagmi/chains'
 
-// Get project ID from environment or use a placeholder
-// You'll need to get a real project ID from https://cloud.walletconnect.com/
-const projectId = process.env.REACT_APP_WALLETCONNECT_PROJECT_ID || 'demo'
+// WalletConnect Project ID
+const projectId = '2cfa96ac5508648ee6efcf6cd3566358'
 
 const metadata = {
   name: 'Arcolia',
