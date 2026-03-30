@@ -50,13 +50,24 @@ function App() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // Check if mobile device
-    const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    // Check if mobile device - more comprehensive detection
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet/i;
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isSmallScreen = window.innerWidth <= 768;
+      return mobileRegex.test(userAgent.toLowerCase()) || (isTouchDevice && isSmallScreen);
+    };
+    
+    const mobile = checkMobile();
     setIsMobile(mobile);
+    console.log('Is mobile device:', mobile, 'UserAgent:', navigator.userAgent);
     
     if (!window.ethereum) {
       setHasMetaMask(false);
+      console.log('MetaMask not detected (window.ethereum is undefined)');
     } else {
+      console.log('MetaMask detected');
       window.ethereum.on('accountsChanged', handleAccountsChanged);
       window.ethereum.on('chainChanged', handleChainChanged);
     }
@@ -154,28 +165,45 @@ function App() {
 
   const checkArcoTokenAccess = async (address, prov, chain) => {
     try {
+      console.log('Checking ARCO access for:', address, 'on chain:', chain);
+      
       const tokenAddress = ARCO_TOKEN_CONFIG[chain];
 
       if (!tokenAddress) {
-        console.log('ARCO token not configured for this network.');
+        console.log('ARCO token not configured for chain:', chain);
         setArcoBalance(null);
-        setError('Please switch to Polygon network to check your ARCO balance');
+        setError(`Please switch to Polygon network (you're on chain ${chain})`);
         return false;
       }
 
+      console.log('Token address:', tokenAddress);
       const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, prov);
-      const bal = await tokenContract.balanceOf(address);
-      const decimals = await tokenContract.decimals();
-      const formattedBalance = parseFloat(ethers.formatUnits(bal, decimals));
       
-      setArcoBalance(formattedBalance);
-      setError(null);
-      return formattedBalance >= MIN_ARCO_REQUIRED;
+      try {
+        const bal = await tokenContract.balanceOf(address);
+        console.log('Raw balance:', bal.toString());
+        
+        const decimals = await tokenContract.decimals();
+        console.log('Decimals:', decimals);
+        
+        const formattedBalance = parseFloat(ethers.formatUnits(bal, decimals));
+        console.log('Formatted balance:', formattedBalance);
+        
+        setArcoBalance(formattedBalance);
+        setError(null);
+        return formattedBalance >= MIN_ARCO_REQUIRED;
+      } catch (contractError) {
+        console.error('Contract call error:', contractError);
+        // Token might not exist or wrong address
+        setArcoBalance(0);
+        setError('Could not read ARCO balance. Make sure you are on Polygon network.');
+        return false;
+      }
 
     } catch (err) {
       console.error('Error checking ARCO balance:', err);
-      setArcoBalance(null);
-      setError('Error checking ARCO balance. Please try again.');
+      setArcoBalance(0);
+      setError('Error checking ARCO balance: ' + (err.message || 'Unknown error'));
       return false;
     }
   };
@@ -281,7 +309,9 @@ function App() {
                     ? 'Connect your wallet to enter' 
                     : accessGranted 
                       ? '✓ Access Granted - Welcome to Arcolia'
-                      : `✗ Access Denied - You need at least ${MIN_ARCO_REQUIRED} ARCO tokens`
+                      : chainId !== 137
+                        ? `✗ Wrong Network - Please switch to Polygon (Currently on ${networkInfo.name})`
+                        : `✗ Access Denied - You need at least ${MIN_ARCO_REQUIRED} ARCO tokens`
                   }
                 </span>
               </div>
