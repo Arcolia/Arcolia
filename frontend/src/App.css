@@ -240,6 +240,27 @@ html, body, #root, .app {
   box-shadow: none;
 }
 
+.wallet-button.enter-guild {
+  background: linear-gradient(
+    180deg,
+    #4ade80 0%,
+    #22c55e 30%,
+    #16a34a 70%,
+    #15803d 100%
+  );
+  color: #052e16;
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 20px rgba(74, 222, 128, 0.2);
+}
+
+.wallet-button.enter-guild:hover:not(:disabled) {
+  box-shadow: 
+    0 6px 25px rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(74, 222, 128, 0.3);
+}
+
 .metamask-icon {
   width: 24px;
   height: 24px;

@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
+import GuildHall from './GuildHall';
 import './App.css';
+
+// Check for test mode via URL param
+const urlParams = new URLSearchParams(window.location.search);
+const testMode = urlParams.get('test') === 'guild';
 
 // ARCO Token Configuration
 const ARCO_TOKEN_CONFIG = {
@@ -27,13 +32,17 @@ const NETWORKS = {
 };
 
 function App() {
-  const [hasEnteredGate, setHasEnteredGate] = useState(false);
+  // View state: 'gate' | 'guild'
+  const [currentView, setCurrentView] = useState(testMode ? 'guild' : 'gate');
+  
+  // For test mode, set demo values
+  const [hasEnteredGate, setHasEnteredGate] = useState(testMode);
   const [provider, setProvider] = useState(null);
-  const [userAddress, setUserAddress] = useState(null);
-  const [chainId, setChainId] = useState(null);
-  const [balance, setBalance] = useState(null);
-  const [arcoBalance, setArcoBalance] = useState(null);
-  const [accessGranted, setAccessGranted] = useState(false);
+  const [userAddress, setUserAddress] = useState(testMode ? '0x1234567890abcdef1234567890abcdef12345678' : null);
+  const [chainId, setChainId] = useState(testMode ? 137 : null);
+  const [balance, setBalance] = useState(testMode ? '10.5' : null);
+  const [arcoBalance, setArcoBalance] = useState(testMode ? 1250 : null);
+  const [accessGranted, setAccessGranted] = useState(testMode);
   const [error, setError] = useState(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [hasMetaMask, setHasMetaMask] = useState(true);
@@ -153,6 +162,19 @@ function App() {
     setArcoBalance(null);
     setAccessGranted(false);
     setError(null);
+    setCurrentView('gate');
+    setHasEnteredGate(false);
+  };
+
+  const enterGuildHall = () => {
+    if (accessGranted) {
+      setCurrentView('guild');
+    }
+  };
+
+  const leaveGuild = () => {
+    setCurrentView('gate');
+    setHasEnteredGate(true); // Keep wallet section visible
   };
 
   const formatAddress = (addr) => {
@@ -161,6 +183,18 @@ function App() {
 
   const networkInfo = NETWORKS[chainId] || { name: `Network ${chainId}`, symbol: 'ETH' };
 
+  // Show Guild Hall if user has entered
+  if (currentView === 'guild') {
+    return (
+      <GuildHall 
+        userAddress={userAddress}
+        arcoBalance={arcoBalance}
+        onLeaveGuild={leaveGuild}
+      />
+    );
+  }
+
+  // Show Gate (Landing Page)
   return (
     <div className="app">
       <div className="background-container">
@@ -219,13 +253,24 @@ function App() {
                   )}
                 </button>
               ) : (
-                <button 
-                  className="wallet-button secondary"
-                  onClick={disconnectWallet}
-                  data-testid="disconnect-wallet-btn"
-                >
-                  Disconnect
-                </button>
+                <>
+                  {accessGranted && (
+                    <button 
+                      className="wallet-button enter-guild"
+                      onClick={enterGuildHall}
+                      data-testid="enter-guild-btn"
+                    >
+                      Enter the Guild Hall
+                    </button>
+                  )}
+                  <button 
+                    className="wallet-button secondary"
+                    onClick={disconnectWallet}
+                    data-testid="disconnect-wallet-btn"
+                  >
+                    Disconnect
+                  </button>
+                </>
               )}
 
               {userAddress && (
@@ -234,7 +279,7 @@ function App() {
                   <div className="wallet-balance">Balance: {parseFloat(balance || 0).toFixed(4)} {networkInfo.symbol}</div>
                   {arcoBalance !== null && (
                     <div className={`arco-balance ${accessGranted ? 'granted' : 'denied'}`}>
-                      ARCO: {arcoBalance}
+                      ARCO: {typeof arcoBalance === 'number' ? arcoBalance.toLocaleString() : arcoBalance}
                     </div>
                   )}
                   <div className="wallet-network">{networkInfo.name}</div>

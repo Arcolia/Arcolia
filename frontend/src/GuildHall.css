@@ -1,0 +1,360 @@
+/* ===========================================
+   GUILD HALL STYLES
+   =========================================== */
+
+.guild-hall {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+/* Background */
+.guild-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+.guild-bg-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.guild-overlay {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse at center bottom, transparent 30%, rgba(0,0,0,0.4) 70%),
+    linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.5) 100%);
+  pointer-events: none;
+}
+
+/* Header */
+.guild-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  padding: 24px;
+  text-align: center;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
+}
+
+.guild-title {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-weight: 500;
+  color: #d4b978;
+  letter-spacing: 0.2em;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.8);
+  margin: 0;
+}
+
+/* Coming Soon Areas - Top Corners */
+.coming-soon-areas {
+  position: absolute;
+  top: 15%;
+  left: 0;
+  right: 0;
+  z-index: 15;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 3%;
+  pointer-events: none;
+}
+
+.coming-soon-btn {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 20px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(100, 100, 100, 0.4);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+}
+
+.coming-soon-btn:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.85);
+  border-color: rgba(150, 150, 150, 0.5);
+}
+
+.coming-soon-btn .lock-icon {
+  font-size: 1.2rem;
+}
+
+.coming-soon-btn .area-name {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.1em;
+}
+
+.coming-soon-btn .coming-soon-text {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+/* Center Member Info */
+.member-info-center {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+}
+
+.member-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 40px;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(201, 169, 98, 0.4);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.member-status {
+  margin-bottom: 4px;
+}
+
+.status-badge {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #d4b978;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  padding: 6px 16px;
+  background: linear-gradient(135deg, rgba(201, 169, 98, 0.2) 0%, rgba(166, 139, 75, 0.1) 100%);
+  border: 1px solid rgba(201, 169, 98, 0.4);
+  border-radius: 20px;
+}
+
+.member-username {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.05em;
+}
+
+.token-balance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(201, 169, 98, 0.1);
+  border-radius: 8px;
+}
+
+.token-icon {
+  font-size: 1.2rem;
+  color: #d4b978;
+}
+
+.balance-amount {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #e5cc88;
+}
+
+.token-name {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.1em;
+}
+
+/* Navigation Areas - Bottom */
+.navigation-areas {
+  position: absolute;
+  bottom: 15%;
+  left: 0;
+  right: 0;
+  z-index: 15;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 8%;
+  pointer-events: none;
+}
+
+.nav-area-btn {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 28px;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(201, 169, 98, 0.4);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+}
+
+.nav-area-btn:hover {
+  transform: translateY(-4px);
+  background: rgba(0, 0, 0, 0.85);
+  border-color: rgba(201, 169, 98, 0.7);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(201, 169, 98, 0.15);
+}
+
+.nav-area-btn .nav-icon {
+  font-size: 1.8rem;
+}
+
+.nav-area-btn .nav-name {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1rem;
+  color: #d4b978;
+  letter-spacing: 0.1em;
+}
+
+.nav-area-btn .nav-hint {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+}
+
+/* Leave Guild Button */
+.leave-guild-container {
+  position: absolute;
+  bottom: 3%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+}
+
+.leave-guild-btn {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  padding: 10px 28px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.leave-guild-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .coming-soon-areas {
+    top: 12%;
+    padding: 0 2%;
+  }
+
+  .coming-soon-btn {
+    padding: 8px 12px;
+  }
+
+  .coming-soon-btn .area-name {
+    font-size: 0.75rem;
+  }
+
+  .member-info-center {
+    top: 50%;
+  }
+
+  .member-card {
+    padding: 18px 28px;
+  }
+
+  .balance-amount {
+    font-size: 1.2rem;
+  }
+
+  .navigation-areas {
+    bottom: 12%;
+    padding: 0 4%;
+  }
+
+  .nav-area-btn {
+    padding: 12px 18px;
+  }
+
+  .nav-area-btn .nav-icon {
+    font-size: 1.4rem;
+  }
+
+  .nav-area-btn .nav-name {
+    font-size: 0.85rem;
+  }
+
+  .nav-area-btn .nav-hint {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .guild-title {
+    font-size: 1.3rem;
+    letter-spacing: 0.15em;
+  }
+
+  .coming-soon-btn .area-name {
+    display: none;
+  }
+
+  .member-card {
+    padding: 14px 20px;
+    gap: 8px;
+  }
+
+  .status-badge {
+    font-size: 0.7rem;
+    padding: 4px 12px;
+  }
+
+  .member-username {
+    font-size: 0.85rem;
+  }
+
+  .balance-amount {
+    font-size: 1rem;
+  }
+
+  .navigation-areas {
+    padding: 0 3%;
+  }
+
+  .nav-area-btn {
+    padding: 10px 14px;
+  }
+
+  .nav-area-btn .nav-name {
+    font-size: 0.75rem;
+  }
+
+  .nav-area-btn .nav-hint {
+    display: none;
+  }
+}
