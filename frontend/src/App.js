@@ -47,8 +47,13 @@ function App() {
   const [error, setError] = useState(testWrongNetwork ? 'Please switch to Polygon network to check your ARCO balance' : null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [hasMetaMask, setHasMetaMask] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // Check if mobile device
+    const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    setIsMobile(mobile);
+    
     if (!window.ethereum) {
       setHasMetaMask(false);
     } else {
@@ -79,12 +84,29 @@ function App() {
   const handleEnterClick = () => {
     setHasEnteredGate(true);
     if (!window.ethereum) {
-      setError('MetaMask is not installed. Please install it from metamask.io');
+      if (isMobile) {
+        setError('Tap "Open in MetaMask" to connect your wallet');
+      } else {
+        setError('MetaMask is not installed. Please install it from metamask.io');
+      }
     }
+  };
+
+  const openInMetaMaskBrowser = () => {
+    // Get current URL without protocol
+    const currentUrl = window.location.href.replace(/^https?:\/\//, '');
+    // MetaMask deep link to open in their in-app browser
+    const metamaskDeepLink = `https://metamask.app.link/dapp/${currentUrl}`;
+    window.location.href = metamaskDeepLink;
   };
 
   const connectWallet = async () => {
     if (!window.ethereum) {
+      if (isMobile) {
+        // On mobile, open in MetaMask browser
+        openInMetaMaskBrowser();
+        return;
+      }
       window.open('https://metamask.io/download/', '_blank');
       return;
     }
@@ -271,10 +293,20 @@ function App() {
                   disabled={isConnecting}
                   data-testid="connect-wallet-btn"
                 >
-                  {!hasMetaMask ? (
-                    'Install MetaMask'
-                  ) : isConnecting ? (
+                  {isConnecting ? (
                     'Connecting...'
+                  ) : !hasMetaMask && isMobile ? (
+                    <>
+                      <svg className="metamask-icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M21.37 3L13.06 9.24L14.57 5.52L21.37 3Z" fill="#E17726"/>
+                        <path d="M2.63 3L10.87 9.3L9.43 5.52L2.63 3Z" fill="#E27625"/>
+                        <path d="M18.44 16.16L16.31 19.5L20.92 20.77L22.24 16.23L18.44 16.16Z" fill="#E27625"/>
+                        <path d="M1.77 16.23L3.08 20.77L7.69 19.5L5.56 16.16L1.77 16.23Z" fill="#E27625"/>
+                      </svg>
+                      Open in MetaMask
+                    </>
+                  ) : !hasMetaMask ? (
+                    'Install MetaMask'
                   ) : (
                     <>
                       <svg className="metamask-icon" viewBox="0 0 24 24" fill="none">
