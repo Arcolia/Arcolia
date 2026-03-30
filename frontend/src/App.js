@@ -289,16 +289,16 @@ function App() {
                 </button>
               ) : (
                 <>
-                  {chainId !== 137 && (
+                  {(chainId === null || chainId !== 137) && (
                     <button 
                       className="wallet-button switch-network"
                       onClick={switchToPolygon}
                       data-testid="switch-network-btn"
                     >
-                      Switch to Polygon
+                      🔗 Switch to Polygon Network
                     </button>
                   )}
-                  {accessGranted && (
+                  {accessGranted && chainId === 137 && (
                     <button 
                       className="wallet-button enter-guild"
                       onClick={enterGuildHall}
