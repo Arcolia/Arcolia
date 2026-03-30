@@ -9,7 +9,7 @@ const testMode = urlParams.get('test') === 'guild';
 
 // ARCO Token Configuration
 const ARCO_TOKEN_CONFIG = {
-  137: '0x6a931530fb7946dC95fd9d7245157661D7B0B375',
+  137: '0x6D00EABF782Df498738f29e6558157d36518C663',
 };
 
 const MIN_ARCO_REQUIRED = 1;
