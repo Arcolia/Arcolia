@@ -134,9 +134,10 @@ function App() {
       const tokenAddress = ARCO_TOKEN_CONFIG[chain];
 
       if (!tokenAddress) {
-        console.log('ARCO token not configured for this network. Demo mode: allowing access.');
-        setArcoBalance('Demo Mode');
-        return true;
+        console.log('ARCO token not configured for this network.');
+        setArcoBalance(null);
+        setError('Please switch to Polygon network to check your ARCO balance');
+        return false;
       }
 
       const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, prov);
@@ -145,12 +146,45 @@ function App() {
       const formattedBalance = parseFloat(ethers.formatUnits(bal, decimals));
       
       setArcoBalance(formattedBalance);
+      setError(null);
       return formattedBalance >= MIN_ARCO_REQUIRED;
 
     } catch (err) {
       console.error('Error checking ARCO balance:', err);
-      setArcoBalance('Check Failed');
-      return true;
+      setArcoBalance(null);
+      setError('Error checking ARCO balance. Please try again.');
+      return false;
+    }
+  };
+
+  const switchToPolygon = async () => {
+    if (!window.ethereum) return;
+    
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: '0x89' }], // 137 in hex
+      });
+    } catch (switchError) {
+      // Chain not added, try to add it
+      if (switchError.code === 4902) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: '0x89',
+              chainName: 'Polygon Mainnet',
+              nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+              rpcUrls: ['https://polygon-rpc.com/'],
+              blockExplorerUrls: ['https://polygonscan.com/'],
+            }],
+          });
+        } catch (addError) {
+          setError('Failed to add Polygon network. Please add it manually.');
+        }
+      } else {
+        setError('Failed to switch network. Please switch to Polygon manually.');
+      }
     }
   };
 
@@ -254,6 +288,15 @@ function App() {
                 </button>
               ) : (
                 <>
+                  {chainId !== 137 && (
+                    <button 
+                      className="wallet-button switch-network"
+                      onClick={switchToPolygon}
+                      data-testid="switch-network-btn"
+                    >
+                      Switch to Polygon
+                    </button>
+                  )}
                   {accessGranted && (
                     <button 
                       className="wallet-button enter-guild"
@@ -277,9 +320,9 @@ function App() {
                 <div className="wallet-info" data-testid="wallet-info">
                   <div className="wallet-address">{formatAddress(userAddress)}</div>
                   <div className="wallet-balance">Balance: {parseFloat(balance || 0).toFixed(4)} {networkInfo.symbol}</div>
-                  {arcoBalance !== null && (
+                  {arcoBalance !== null && typeof arcoBalance === 'number' && (
                     <div className={`arco-balance ${accessGranted ? 'granted' : 'denied'}`}>
-                      ARCO: {typeof arcoBalance === 'number' ? arcoBalance.toLocaleString() : arcoBalance}
+                      ARCO: {arcoBalance.toLocaleString()}
                     </div>
                   )}
                   <div className="wallet-network">{networkInfo.name}</div>
