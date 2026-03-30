@@ -6,6 +6,7 @@ import './App.css';
 // Check for test mode via URL param
 const urlParams = new URLSearchParams(window.location.search);
 const testMode = urlParams.get('test') === 'guild';
+const testWrongNetwork = urlParams.get('test') === 'wrongnet';
 
 // ARCO Token Configuration
 const ARCO_TOKEN_CONFIG = {
@@ -36,14 +37,14 @@ function App() {
   const [currentView, setCurrentView] = useState(testMode ? 'guild' : 'gate');
   
   // For test mode, set demo values
-  const [hasEnteredGate, setHasEnteredGate] = useState(testMode);
+  const [hasEnteredGate, setHasEnteredGate] = useState(testMode || testWrongNetwork);
   const [provider, setProvider] = useState(null);
-  const [userAddress, setUserAddress] = useState(testMode ? '0x1234567890abcdef1234567890abcdef12345678' : null);
-  const [chainId, setChainId] = useState(testMode ? 137 : null);
-  const [balance, setBalance] = useState(testMode ? '10.5' : null);
+  const [userAddress, setUserAddress] = useState((testMode || testWrongNetwork) ? '0x1234567890abcdef1234567890abcdef12345678' : null);
+  const [chainId, setChainId] = useState(testMode ? 137 : (testWrongNetwork ? 1 : null));
+  const [balance, setBalance] = useState((testMode || testWrongNetwork) ? '10.5' : null);
   const [arcoBalance, setArcoBalance] = useState(testMode ? 1250 : null);
   const [accessGranted, setAccessGranted] = useState(testMode);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(testWrongNetwork ? 'Please switch to Polygon network to check your ARCO balance' : null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [hasMetaMask, setHasMetaMask] = useState(true);
 
