@@ -376,9 +376,12 @@ function SignupForm({ onSuccess, onSwitchToLogin, onBack }) {
 // Email Verification Form
 function VerifyForm({ initialToken, onSuccess, onBack }) {
   const [token, setToken] = useState(initialToken || '');
+  const [email, setEmail] = useState('');
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [showResend, setShowResend] = useState(false);
 
   // Auto-verify if token provided in URL
   useEffect(() => {
@@ -414,6 +417,35 @@ function VerifyForm({ initialToken, onSuccess, onBack }) {
     }
   };
 
+  const handleResend = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+    setResending(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/resend-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Failed to resend');
+      }
+
+      setSuccess('Verification email sent! Check your inbox.');
+      setShowResend(false);
+      setEmail('');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setResending(false);
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     handleVerify(token);
@@ -428,7 +460,7 @@ function VerifyForm({ initialToken, onSuccess, onBack }) {
           : 'Check your email for a verification link, or enter the code below'}
       </p>
       
-      {!initialToken && (
+      {!initialToken && !showResend && (
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <input
@@ -455,6 +487,33 @@ function VerifyForm({ initialToken, onSuccess, onBack }) {
         </form>
       )}
 
+      {!initialToken && showResend && (
+        <form onSubmit={handleResend}>
+          <div className="form-group">
+            <input
+              type="email"
+              placeholder="Enter your email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              data-testid="resend-email"
+            />
+          </div>
+
+          {error && <div className="error-message">{error}</div>}
+          {success && <div className="success-message">{success}</div>}
+
+          <button 
+            type="submit" 
+            className="auth-submit-btn"
+            disabled={resending}
+            data-testid="resend-submit"
+          >
+            {resending ? 'Sending...' : 'Resend Verification Email'}
+          </button>
+        </form>
+      )}
+
       {initialToken && (
         <>
           {loading && <div className="loading-spinner" style={{margin: '20px auto'}}></div>}
@@ -464,6 +523,16 @@ function VerifyForm({ initialToken, onSuccess, onBack }) {
       )}
 
       <div className="auth-footer">
+        {!initialToken && !showResend && (
+          <button onClick={() => setShowResend(true)} className="link-btn">
+            Didn't receive the email? Resend
+          </button>
+        )}
+        {showResend && (
+          <button onClick={() => setShowResend(false)} className="link-btn">
+            ← Back to verification
+          </button>
+        )}
         <button onClick={onBack} className="back-btn">← Back to Login</button>
       </div>
     </div>
