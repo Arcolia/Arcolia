@@ -1,62 +1,62 @@
 # Arcolia Website - PRD
 
 ## Original Problem Statement
-Build a token-gated Arcolia website with medieval fantasy theme. Traditional username/password authentication with email verification. Users access Guild Hall after login. Inside Guild Hall, wallet connect is needed to access deeper areas (Sanctuary, Treasury).
+Build a token-gated Arcolia website with medieval fantasy theme. Traditional username/password authentication with email verification using Resend. Forgot password flow with email reset link.
 
 ## Architecture
 - **Frontend**: React 18 SPA
 - **Backend**: FastAPI with MongoDB
 - **Auth**: JWT tokens with email verification
+- **Email**: Resend (requires API key)
 - **Token**: ARCO on Polygon (0x6D00EABF782Df498738f29e6558157d36518C663)
+
+## Email Service Setup
+To enable email sending:
+1. Create free account at **resend.com**
+2. Get your API key from the dashboard
+3. Add to `/app/backend/.env`:
+   ```
+   RESEND_API_KEY=re_your_api_key_here
+   SENDER_EMAIL=your-verified-email@domain.com
+   ```
+4. Restart backend: `sudo supervisorctl restart backend`
+
+Note: Until configured, tokens are returned in API responses for testing.
 
 ## User Flow
 1. **Gate** → Click "Enter Arcolia"
-2. **Login/Signup** → Create account or login
-3. **Email Verification** → Verify email to activate account
-4. **Guild Hall** → Access main hub with username displayed
-5. **Wallet Connect** → Connect wallet in Guild Hall to access deeper areas
-6. **Token Gating** → Sanctuary & Treasury require ARCO tokens
-
-## Member Tiers (based on ARCO holdings)
-- **Member**: No wallet connected
-- **Initiate**: < 10 ARCO
-- **Squire**: 10-99 ARCO
-- **Knight**: 100-999 ARCO
-- **Noble**: 1,000-9,999 ARCO
-- **Elder**: 10,000+ ARCO
+2. **Signup** → Username, email, password
+3. **Email Verification** → Click link in email (or enter token)
+4. **Login** → Email + password
+5. **Forgot Password** → Enter email → Receive reset link → Set new password
+6. **Guild Hall** → Main hub with username displayed
+7. **Wallet Connect** → Inside Guild Hall for deeper areas
 
 ## What's Been Implemented (Jan 2026)
 
-### Authentication System
+### Email Service
+- [x] Resend integration for transactional emails
+- [x] Beautiful HTML email templates (Arcolia themed)
+- [x] Verification emails with 24hr expiry
+- [x] Password reset emails with 1hr expiry
+- [x] Fallback mode when API key not configured
+
+### Authentication
 - [x] Signup with username, email, password
-- [x] Email verification (token-based)
+- [x] Email verification (link or manual token)
 - [x] Login with JWT tokens
-- [x] Password hashing (SHA-256)
-- [x] Username/email uniqueness validation
-- [x] Resend verification email
+- [x] Forgot password flow
+- [x] Reset password with new password
+- [x] URL parameter handling (?verify=token, ?reset=token)
+- [x] Auto-verification when clicking email link
 
-### Gate (Landing Page)
-- [x] Medieval gate background
-- [x] Login form with email/password
-- [x] Signup form with username/email/password
+### Forms
+- [x] Login form with forgot password link
+- [x] Signup form
 - [x] Email verification form
-- [x] Form navigation (login ↔ signup ↔ verify)
-
-### Guild Hall
-- [x] Beautiful stained glass library background
-- [x] Username displayed in member card
-- [x] Member status badge
-- [x] Wallet connect button
-- [x] Wallet connect modal
-- [x] ARCO balance display (when wallet connected)
-- [x] Navigation locked without wallet (Sanctuary, Treasury)
-- [x] Coming Soon locked areas (Archives, Council Chamber)
-- [x] Leave Guild button in header
-
-### PWA Support
-- [x] manifest.json for installability
-- [x] Service worker for offline support
-- [x] Install prompt on mobile
+- [x] Forgot password form
+- [x] Reset password form
+- [x] All forms have proper validation
 
 ## API Endpoints
 - POST /api/auth/signup
@@ -65,6 +65,8 @@ Build a token-gated Arcolia website with medieval fantasy theme. Traditional use
 - GET /api/auth/me
 - POST /api/auth/link-wallet
 - POST /api/auth/unlink-wallet
+- POST /api/auth/forgot-password
+- POST /api/auth/reset-password
 - POST /api/auth/resend-verification
 
 ## Prioritized Backlog
@@ -72,17 +74,15 @@ Build a token-gated Arcolia website with medieval fantasy theme. Traditional use
 ### P0 (Next Phase)
 - [ ] Build The Sanctuary page
 - [ ] Build Treasury page
-- [ ] Integrate email sending service (SendGrid/Resend)
-- [ ] Forgot password flow
+- [ ] Custom domain setup
 
 ### P1 (Future)
 - [ ] Unlock Archives area
 - [ ] Unlock Council Chamber
 - [ ] User profile editing
-- [ ] Achievement badges
-- [ ] Activity history
+- [ ] Change password (when logged in)
 
 ### P2 (Nice to Have)
 - [ ] WalletConnect support in Guild Hall
-- [ ] Multiple wallet support
-- [ ] Mobile app wrapper
+- [ ] Social login (Discord, Twitter)
+- [ ] Achievement badges
