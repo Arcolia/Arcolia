@@ -11,6 +11,7 @@ class ArcoliaAPITester:
         self.tests_run = 0
         self.tests_passed = 0
         self.verification_token = None
+        self.reset_token = None
 
     def run_test(self, name, method, endpoint, expected_status, data=None, headers=None):
         """Run a single API test"""
@@ -222,6 +223,79 @@ class ArcoliaAPITester:
         )
         return success
 
+    def test_forgot_password(self, email):
+        """Test forgot password request"""
+        success, response = self.run_test(
+            "Forgot Password Request",
+            "POST",
+            "api/auth/forgot-password",
+            200,
+            data={"email": email}
+        )
+        if success and 'reset_token' in response:
+            self.reset_token = response['reset_token']
+            print(f"   Reset token saved: {self.reset_token}")
+        return success
+
+    def test_forgot_password_nonexistent_email(self):
+        """Test forgot password with non-existent email"""
+        success, response = self.run_test(
+            "Forgot Password with Non-existent Email",
+            "POST",
+            "api/auth/forgot-password",
+            200,
+            data={"email": "nonexistent@example.com"}
+        )
+        return success
+
+    def test_reset_password(self, token, new_password):
+        """Test password reset"""
+        success, response = self.run_test(
+            "Reset Password",
+            "POST",
+            "api/auth/reset-password",
+            200,
+            data={"token": token, "new_password": new_password}
+        )
+        return success
+
+    def test_reset_password_invalid_token(self):
+        """Test password reset with invalid token (should fail)"""
+        success, response = self.run_test(
+            "Reset Password with Invalid Token (should fail)",
+            "POST",
+            "api/auth/reset-password",
+            400,
+            data={"token": "invalid_token_123", "new_password": "NewPass123!"}
+        )
+        return success
+
+    def test_reset_password_short_password(self, token):
+        """Test password reset with short password (should fail)"""
+        success, response = self.run_test(
+            "Reset Password with Short Password (should fail)",
+            "POST",
+            "api/auth/reset-password",
+            400,
+            data={"token": token, "new_password": "123"}
+        )
+        return success
+
+    def test_login_with_new_password(self, email, new_password):
+        """Test login with new password after reset"""
+        success, response = self.run_test(
+            "Login with New Password",
+            "POST",
+            "api/auth/login",
+            200,
+            data={"email": email, "password": new_password}
+        )
+        if success and 'token' in response:
+            self.token = response['token']
+            self.user_data = response.get('user', {})
+            print(f"   New token saved: {self.token[:20]}...")
+        return success
+
 def main():
     print("🚀 Starting Arcolia API Tests")
     print("=" * 50)
@@ -233,6 +307,7 @@ def main():
     test_username = f"testuser{timestamp}"
     test_email = f"test{timestamp}@example.com"
     test_password = "TestPass123!"
+    new_password = "NewTestPass456!"
     test_wallet = "0x742d35Cc6634C0532925a3b8D404d3aAB8c3f1e2"
 
     print(f"Test user: {test_username}")
@@ -265,6 +340,14 @@ def main():
         ("Link Invalid Wallet", lambda: tester.test_link_wallet_invalid_format()),
         ("Link Valid Wallet", lambda: tester.test_link_wallet(test_wallet)),
         ("Unlink Wallet", lambda: tester.test_unlink_wallet()),
+        
+        # Forgot password flow
+        ("Forgot Password Non-existent Email", lambda: tester.test_forgot_password_nonexistent_email()),
+        ("Forgot Password Valid Email", lambda: tester.test_forgot_password(test_email)),
+        ("Reset Password Invalid Token", lambda: tester.test_reset_password_invalid_token()),
+        ("Reset Password Short Password", lambda: tester.test_reset_password_short_password(tester.reset_token) if tester.reset_token else False),
+        ("Reset Password Valid", lambda: tester.test_reset_password(tester.reset_token, new_password) if tester.reset_token else False),
+        ("Login with New Password", lambda: tester.test_login_with_new_password(test_email, new_password)),
     ]
     
     # Run all tests

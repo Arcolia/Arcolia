@@ -5,11 +5,33 @@ import './App.css';
 const API_URL = process.env.REACT_APP_BACKEND_URL || '';
 
 function App() {
-  const [currentView, setCurrentView] = useState('gate'); // gate, login, signup, verify, guild
+  const [currentView, setCurrentView] = useState('gate');
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('arcolia_token'));
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [urlToken, setUrlToken] = useState(null);
+  const [urlTokenType, setUrlTokenType] = useState(null);
+
+  // Check URL params on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const verifyToken = params.get('verify');
+    const resetToken = params.get('reset');
+    
+    if (verifyToken) {
+      setUrlToken(verifyToken);
+      setUrlTokenType('verify');
+      setCurrentView('verify');
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (resetToken) {
+      setUrlToken(resetToken);
+      setUrlTokenType('reset');
+      setCurrentView('reset-password');
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   // Check if user is logged in on mount
   useEffect(() => {
@@ -29,9 +51,10 @@ function App() {
       if (response.ok) {
         const userData = await response.json();
         setUser(userData);
-        setCurrentView('guild');
+        if (currentView === 'gate' || currentView === 'login') {
+          setCurrentView('guild');
+        }
       } else {
-        // Token invalid, clear it
         localStorage.removeItem('arcolia_token');
         setToken(null);
       }
@@ -105,15 +128,14 @@ function App() {
             <LoginForm 
               onSuccess={handleLoginSuccess}
               onSwitchToSignup={() => setCurrentView('signup')}
+              onSwitchToForgot={() => setCurrentView('forgot-password')}
               onBack={() => setCurrentView('gate')}
             />
           )}
 
           {currentView === 'signup' && (
             <SignupForm 
-              onSuccess={(verificationToken) => {
-                setCurrentView('verify');
-              }}
+              onSuccess={() => setCurrentView('verify')}
               onSwitchToLogin={() => setCurrentView('login')}
               onBack={() => setCurrentView('gate')}
             />
@@ -121,7 +143,31 @@ function App() {
 
           {currentView === 'verify' && (
             <VerifyForm 
+              initialToken={urlTokenType === 'verify' ? urlToken : null}
+              onSuccess={() => {
+                setUrlToken(null);
+                setUrlTokenType(null);
+                setCurrentView('login');
+              }}
+              onBack={() => setCurrentView('login')}
+            />
+          )}
+
+          {currentView === 'forgot-password' && (
+            <ForgotPasswordForm 
               onSuccess={() => setCurrentView('login')}
+              onBack={() => setCurrentView('login')}
+            />
+          )}
+
+          {currentView === 'reset-password' && (
+            <ResetPasswordForm 
+              token={urlToken}
+              onSuccess={() => {
+                setUrlToken(null);
+                setUrlTokenType(null);
+                setCurrentView('login');
+              }}
               onBack={() => setCurrentView('login')}
             />
           )}
@@ -132,7 +178,7 @@ function App() {
 }
 
 // Login Form Component
-function LoginForm({ onSuccess, onSwitchToSignup, onBack }) {
+function LoginForm({ onSuccess, onSwitchToSignup, onSwitchToForgot, onBack }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
@@ -205,6 +251,7 @@ function LoginForm({ onSuccess, onSwitchToSignup, onBack }) {
       </form>
 
       <div className="auth-footer">
+        <button onClick={onSwitchToForgot} className="link-btn">Forgot password?</button>
         <p>New to Arcolia? <button onClick={onSwitchToSignup} className="link-btn">Create Account</button></p>
         <button onClick={onBack} className="back-btn">← Back to Gate</button>
       </div>
@@ -245,7 +292,7 @@ function SignupForm({ onSuccess, onSwitchToLogin, onBack }) {
         throw new Error(data.detail || 'Signup failed');
       }
 
-      onSuccess(data.verification_token);
+      onSuccess();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -268,8 +315,6 @@ function SignupForm({ onSuccess, onSwitchToLogin, onBack }) {
             required
             minLength={3}
             maxLength={20}
-            pattern="[a-zA-Z0-9]+"
-            title="Letters and numbers only"
             data-testid="signup-username"
           />
         </div>
@@ -329,8 +374,105 @@ function SignupForm({ onSuccess, onSwitchToLogin, onBack }) {
 }
 
 // Email Verification Form
-function VerifyForm({ onSuccess, onBack }) {
-  const [token, setToken] = useState('');
+function VerifyForm({ initialToken, onSuccess, onBack }) {
+  const [token, setToken] = useState(initialToken || '');
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // Auto-verify if token provided in URL
+  useEffect(() => {
+    if (initialToken) {
+      handleVerify(initialToken);
+    }
+  }, [initialToken]);
+
+  const handleVerify = async (verifyToken) => {
+    setError(null);
+    setSuccess(null);
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/verify-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: verifyToken })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Verification failed');
+      }
+
+      setSuccess('Email verified! Redirecting to login...');
+      setTimeout(() => onSuccess(), 2000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    handleVerify(token);
+  };
+
+  return (
+    <div className="auth-form" data-testid="verify-form">
+      <h2>Verify Your Email</h2>
+      <p className="auth-subtitle">
+        {initialToken 
+          ? 'Verifying your email...' 
+          : 'Check your email for a verification link, or enter the code below'}
+      </p>
+      
+      {!initialToken && (
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <input
+              type="text"
+              placeholder="Verification code"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              required
+              data-testid="verify-token"
+            />
+          </div>
+
+          {error && <div className="error-message">{error}</div>}
+          {success && <div className="success-message">{success}</div>}
+
+          <button 
+            type="submit" 
+            className="auth-submit-btn"
+            disabled={loading}
+            data-testid="verify-submit"
+          >
+            {loading ? 'Verifying...' : 'Verify Email'}
+          </button>
+        </form>
+      )}
+
+      {initialToken && (
+        <>
+          {loading && <div className="loading-spinner" style={{margin: '20px auto'}}></div>}
+          {error && <div className="error-message">{error}</div>}
+          {success && <div className="success-message">{success}</div>}
+        </>
+      )}
+
+      <div className="auth-footer">
+        <button onClick={onBack} className="back-btn">← Back to Login</button>
+      </div>
+    </div>
+  );
+}
+
+// Forgot Password Form
+function ForgotPasswordForm({ onSuccess, onBack }) {
+  const [email, setEmail] = useState('');
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -342,20 +484,19 @@ function VerifyForm({ onSuccess, onBack }) {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/auth/verify-email`, {
+      const response = await fetch(`${API_URL}/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token })
+        body: JSON.stringify({ email })
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.detail || 'Verification failed');
+        throw new Error(data.detail || 'Request failed');
       }
 
-      setSuccess('Email verified! You can now log in.');
-      setTimeout(() => onSuccess(), 2000);
+      setSuccess('If an account exists with this email, a reset link has been sent. Check your inbox!');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -364,19 +505,19 @@ function VerifyForm({ onSuccess, onBack }) {
   };
 
   return (
-    <div className="auth-form" data-testid="verify-form">
-      <h2>Verify Your Email</h2>
-      <p className="auth-subtitle">Enter the verification code sent to your email</p>
+    <div className="auth-form" data-testid="forgot-password-form">
+      <h2>Forgot Password</h2>
+      <p className="auth-subtitle">Enter your email and we'll send you a reset link</p>
       
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <input
-            type="text"
-            placeholder="Verification code"
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
+            type="email"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
-            data-testid="verify-token"
+            data-testid="forgot-email"
           />
         </div>
 
@@ -386,10 +527,101 @@ function VerifyForm({ onSuccess, onBack }) {
         <button 
           type="submit" 
           className="auth-submit-btn"
-          disabled={loading}
-          data-testid="verify-submit"
+          disabled={loading || success}
+          data-testid="forgot-submit"
         >
-          {loading ? 'Verifying...' : 'Verify Email'}
+          {loading ? 'Sending...' : 'Send Reset Link'}
+        </button>
+      </form>
+
+      <div className="auth-footer">
+        <button onClick={onBack} className="back-btn">← Back to Login</button>
+      </div>
+    </div>
+  );
+}
+
+// Reset Password Form
+function ResetPasswordForm({ token, onSuccess, onBack }) {
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, new_password: newPassword })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Reset failed');
+      }
+
+      setSuccess('Password reset successfully! Redirecting to login...');
+      setTimeout(() => onSuccess(), 2000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="auth-form" data-testid="reset-password-form">
+      <h2>Reset Password</h2>
+      <p className="auth-subtitle">Enter your new password</p>
+      
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <input
+            type="password"
+            placeholder="New password (min 6 characters)"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+            minLength={6}
+            data-testid="reset-new-password"
+          />
+        </div>
+
+        <div className="form-group">
+          <input
+            type="password"
+            placeholder="Confirm new password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            data-testid="reset-confirm-password"
+          />
+        </div>
+
+        {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
+
+        <button 
+          type="submit" 
+          className="auth-submit-btn"
+          disabled={loading || success}
+          data-testid="reset-submit"
+        >
+          {loading ? 'Resetting...' : 'Reset Password'}
         </button>
       </form>
 
