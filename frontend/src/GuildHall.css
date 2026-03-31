@@ -504,6 +504,9 @@
   font-size: 1.5rem;
   cursor: pointer;
   transition: color 0.2s ease;
+  z-index: 110;
+  padding: 8px;
+  line-height: 1;
 }
 
 .modal-close:hover {

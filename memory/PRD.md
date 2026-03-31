@@ -1,21 +1,24 @@
 # Arcolia Website - PRD
 
 ## Original Problem Statement
-Build a token-gated Arcolia website with medieval fantasy theme. Gate landing page with wallet connection, ARCO token gating on Polygon. Upon access, enter Guild Hall with member info, navigation to different areas.
+Build a token-gated Arcolia website with medieval fantasy theme. Traditional username/password authentication with email verification. Users access Guild Hall after login. Inside Guild Hall, wallet connect is needed to access deeper areas (Sanctuary, Treasury).
 
 ## Architecture
-- **Type**: React SPA + FastAPI backend
-- **Stack**: React 18, ethers.js, FastAPI
-- **Token**: ARCO on Polygon (0x6a931530fb7946dC95fd9d7245157661D7B0B375)
+- **Frontend**: React 18 SPA
+- **Backend**: FastAPI with MongoDB
+- **Auth**: JWT tokens with email verification
+- **Token**: ARCO on Polygon (0x6D00EABF782Df498738f29e6558157d36518C663)
 
 ## User Flow
 1. **Gate** → Click "Enter Arcolia"
-2. **Wallet Connect** → Connect MetaMask
-3. **Token Check** → Verify ARCO holdings (min 1 token)
-4. **Guild Hall** → Access granted, enter Guild Hall
-5. **Navigation** → Library, Throne Room, or Leave Guild
+2. **Login/Signup** → Create account or login
+3. **Email Verification** → Verify email to activate account
+4. **Guild Hall** → Access main hub with username displayed
+5. **Wallet Connect** → Connect wallet in Guild Hall to access deeper areas
+6. **Token Gating** → Sanctuary & Treasury require ARCO tokens
 
 ## Member Tiers (based on ARCO holdings)
+- **Member**: No wallet connected
 - **Initiate**: < 10 ARCO
 - **Squire**: 10-99 ARCO
 - **Knight**: 100-999 ARCO
@@ -23,53 +26,63 @@ Build a token-gated Arcolia website with medieval fantasy theme. Gate landing pa
 - **Elder**: 10,000+ ARCO
 
 ## What's Been Implemented (Jan 2026)
+
+### Authentication System
+- [x] Signup with username, email, password
+- [x] Email verification (token-based)
+- [x] Login with JWT tokens
+- [x] Password hashing (SHA-256)
+- [x] Username/email uniqueness validation
+- [x] Resend verification email
+
 ### Gate (Landing Page)
-- [x] Medieval gate background with "Arcolia" branding
-- [x] Enter Arcolia button (visible on mobile)
-- [x] Wallet connect section with MetaMask
-- [x] ARCO token balance check
-- [x] Access Granted/Denied states
-- [x] "Enter the Guild Hall" button after access granted
-- [x] Disconnect option
+- [x] Medieval gate background
+- [x] Login form with email/password
+- [x] Signup form with username/email/password
+- [x] Email verification form
+- [x] Form navigation (login ↔ signup ↔ verify)
 
 ### Guild Hall
 - [x] Beautiful stained glass library background
-- [x] "The Guild Hall" title
-- [x] Center member card:
-  - Member status badge (Initiate → Elder)
-  - Wallet address (truncated)
-  - ARCO token balance
-- [x] Navigation to The Library (left)
-- [x] Navigation to Throne Room (right)
-- [x] Coming Soon locked areas (Archives, Sanctum)
-- [x] Leave Guild button → returns to gate
+- [x] Username displayed in member card
+- [x] Member status badge
+- [x] Wallet connect button
+- [x] Wallet connect modal
+- [x] ARCO balance display (when wallet connected)
+- [x] Navigation locked without wallet (Sanctuary, Treasury)
+- [x] Coming Soon locked areas (Archives, Council Chamber)
+- [x] Leave Guild button in header
 
-## Files
-- `/app/frontend/src/App.js` - Main app with gate/guild views
-- `/app/frontend/src/GuildHall.js` - Guild Hall component
-- `/app/frontend/src/GuildHall.css` - Guild Hall styles
-- `/app/frontend/src/App.css` - Gate styles
+### PWA Support
+- [x] manifest.json for installability
+- [x] Service worker for offline support
+- [x] Install prompt on mobile
 
-## Test Mode
-Add `?test=guild` to URL to preview Guild Hall with demo data
+## API Endpoints
+- POST /api/auth/signup
+- POST /api/auth/verify-email
+- POST /api/auth/login
+- GET /api/auth/me
+- POST /api/auth/link-wallet
+- POST /api/auth/unlink-wallet
+- POST /api/auth/resend-verification
 
 ## Prioritized Backlog
 
 ### P0 (Next Phase)
-- [ ] Build The Library page
-- [ ] Build Throne Room (Council Chamber + Treasury)
-- [ ] Unlock Archives area
-- [ ] Unlock Sanctum area
+- [ ] Build The Sanctuary page
+- [ ] Build Treasury page
+- [ ] Integrate email sending service (SendGrid/Resend)
+- [ ] Forgot password flow
 
 ### P1 (Future)
-- [ ] User profiles with ENS/custom usernames
-- [ ] Member directory
-- [ ] Announcement board
-- [ ] Governance/voting in Council Chamber
-- [ ] Treasury display
-
-### P2 (Nice to Have)
+- [ ] Unlock Archives area
+- [ ] Unlock Council Chamber
+- [ ] User profile editing
 - [ ] Achievement badges
 - [ ] Activity history
-- [ ] Social features
+
+### P2 (Nice to Have)
+- [ ] WalletConnect support in Guild Hall
+- [ ] Multiple wallet support
 - [ ] Mobile app wrapper
