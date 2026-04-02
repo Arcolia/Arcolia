@@ -469,6 +469,33 @@ html, body, #root, .app {
   cursor: not-allowed;
 }
 
+.resend-verification-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  margin-bottom: 8px;
+  background: transparent;
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  color: var(--gold-light);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.resend-verification-btn:hover:not(:disabled) {
+  background: rgba(201, 169, 98, 0.15);
+  box-shadow: 0 0 15px rgba(201, 169, 98, 0.2);
+}
+
+.resend-verification-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
 .auth-footer {
   margin-top: 24px;
   text-align: center;

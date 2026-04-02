@@ -183,10 +183,15 @@ function LoginForm({ onSuccess, onSwitchToSignup, onSwitchToForgot, onBack }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setNeedsVerification(false);
+    setResendSuccess(null);
     setLoading(true);
 
     try {
@@ -199,6 +204,10 @@ function LoginForm({ onSuccess, onSwitchToSignup, onSwitchToForgot, onBack }) {
       const data = await response.json();
 
       if (!response.ok) {
+        // Check if error is about email verification
+        if (response.status === 403 && data.detail?.toLowerCase().includes('verify')) {
+          setNeedsVerification(true);
+        }
         throw new Error(data.detail || 'Login failed');
       }
 
@@ -207,6 +216,32 @@ function LoginForm({ onSuccess, onSwitchToSignup, onSwitchToForgot, onBack }) {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResending(true);
+    setResendSuccess(null);
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/resend-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Failed to resend verification email');
+      }
+
+      setResendSuccess('Verification email sent! Check your inbox.');
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setResending(false);
     }
   };
 
@@ -239,6 +274,19 @@ function LoginForm({ onSuccess, onSwitchToSignup, onSwitchToForgot, onBack }) {
         </div>
 
         {error && <div className="error-message">{error}</div>}
+        {resendSuccess && <div className="success-message">{resendSuccess}</div>}
+
+        {needsVerification && !resendSuccess && (
+          <button 
+            type="button"
+            className="resend-verification-btn"
+            onClick={handleResendVerification}
+            disabled={resending}
+            data-testid="resend-verification-btn"
+          >
+            {resending ? 'Sending...' : 'Resend Verification Email'}
+          </button>
+        )}
 
         <button 
           type="submit" 
