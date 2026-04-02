@@ -73,7 +73,7 @@ DEFAULT_SETTINGS = {
         "commons": {
             "name": "The Commons",
             "description": "Community chat for all ARCO holders",
-            "arcoRequired": 1,
+            "arcoRequired": 50000,
             "bypassRoles": ["Founder", "Elder"]
         },
         "sanctuary": {

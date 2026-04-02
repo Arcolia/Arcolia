@@ -56,7 +56,7 @@ function GuildHall({ user, token, onLogout, onUpdateUser, oathText }) {
 
   // Room ARCO requirements
   const ROOM_REQUIREMENTS = {
-    commons: 1,
+    commons: 50000,
     sanctuary: 500000,
     treasury: 5000000,
     archives: 25000000,
@@ -541,7 +541,7 @@ function GuildHall({ user, token, onLogout, onUpdateUser, oathText }) {
         </div>
       </header>
 
-      {/* The Commons Chat - Available to all with 1+ ARCO */}
+      {/* The Commons Chat - Available to holders with 50K+ ARCO */}
       <div className="commons-chat-trigger">
         <button 
           className={`commons-btn ${canAccessRoom('commons') ? 'accessible' : 'locked'}`}
@@ -549,7 +549,7 @@ function GuildHall({ user, token, onLogout, onUpdateUser, oathText }) {
           data-testid="commons-btn"
         >
           💬 The Commons
-          <span className="arco-req">1 ARCO</span>
+          <span className="arco-req">50K ARCO</span>
         </button>
       </div>
 
