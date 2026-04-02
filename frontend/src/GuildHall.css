@@ -59,9 +59,6 @@
 }
 
 .logout-btn {
-  position: absolute;
-  top: 24px;
-  right: 24px;
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 0.9rem;
   padding: 8px 20px;
@@ -71,6 +68,33 @@
   color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   transition: all 0.3s ease;
+}
+
+.header-buttons {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.admin-btn {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.9rem;
+  padding: 8px 16px;
+  background: rgba(201, 169, 98, 0.15);
+  border: 1px solid rgba(201, 169, 98, 0.5);
+  border-radius: 6px;
+  color: #d4b978;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.admin-btn:hover {
+  background: rgba(201, 169, 98, 0.25);
+  border-color: rgba(201, 169, 98, 0.8);
+  box-shadow: 0 0 15px rgba(201, 169, 98, 0.2);
 }
 
 .logout-btn:hover {
@@ -564,4 +588,115 @@
   color: rgba(255, 255, 255, 0.4) !important;
   margin-top: 12px !important;
   margin-bottom: 0 !important;
+}
+
+
+/* Admin Modal */
+.admin-modal {
+  background: rgba(15, 15, 15, 0.98);
+  border: 1px solid rgba(201, 169, 98, 0.4);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+}
+
+.admin-modal h3 {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.4rem;
+  color: #d4b978;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.admin-subtitle {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.admin-loading {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 20px;
+}
+
+.users-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  gap: 16px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1rem;
+  color: #d4b978;
+}
+
+.user-email {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.role-select {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(201, 169, 98, 0.4);
+  border-radius: 6px;
+  color: #d4b978;
+  cursor: pointer;
+  min-width: 120px;
+}
+
+.role-select:focus {
+  outline: none;
+  border-color: rgba(201, 169, 98, 0.8);
+}
+
+.role-select option {
+  background: #1a1a1a;
+  color: #d4b978;
+}
+
+.admin-modal .error-message,
+.admin-modal .success-message {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.admin-modal .success-message {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  padding: 10px;
+  border-radius: 6px;
 }

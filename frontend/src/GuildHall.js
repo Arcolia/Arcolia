@@ -20,9 +20,19 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
   const [isConnectingWallet, setIsConnectingWallet] = useState(false);
   const [walletError, setWalletError] = useState(null);
   const [showWalletModal, setShowWalletModal] = useState(false);
+  const [showAdminModal, setShowAdminModal] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [adminError, setAdminError] = useState(null);
+  const [adminSuccess, setAdminSuccess] = useState(null);
 
-  // Determine member status based on ARCO balance
+  // Determine member status - use custom role if set, otherwise calculate from ARCO balance
   const getMemberStatus = () => {
+    // If user has a custom role assigned, use that
+    if (user?.role) {
+      return user.role;
+    }
+    // Otherwise calculate from token balance
     if (arcoBalance === null || arcoBalance === undefined) return 'Member';
     if (arcoBalance >= 10000) return 'Elder';
     if (arcoBalance >= 1000) return 'Noble';
@@ -30,6 +40,8 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
     if (arcoBalance >= 10) return 'Squire';
     return 'Initiate';
   };
+
+  const isFounder = user?.role === 'Founder';
 
   // Check ARCO balance when wallet is connected
   useEffect(() => {
@@ -141,6 +153,61 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
     }
   };
 
+  // Admin functions
+  const fetchAllUsers = async () => {
+    setAdminLoading(true);
+    setAdminError(null);
+    try {
+      const response = await fetch(`${API_URL}/api/users`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.detail || 'Failed to fetch users');
+      }
+      const data = await response.json();
+      setAllUsers(data.users);
+    } catch (err) {
+      setAdminError(err.message);
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  const updateUserRole = async (userId, newRole) => {
+    setAdminError(null);
+    setAdminSuccess(null);
+    try {
+      const response = await fetch(`${API_URL}/api/auth/update-role`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ user_id: userId, role: newRole })
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.detail || 'Failed to update role');
+      }
+      const data = await response.json();
+      setAdminSuccess(data.message);
+      // Refresh user list
+      fetchAllUsers();
+      // If updating own role, update local state
+      if (userId === user.id) {
+        onUpdateUser({ ...user, role: newRole });
+      }
+    } catch (err) {
+      setAdminError(err.message);
+    }
+  };
+
+  const openAdminModal = () => {
+    setShowAdminModal(true);
+    fetchAllUsers();
+  };
+
   const handleNavigation = (area) => {
     if (!walletAddress) {
       setShowWalletModal(true);
@@ -180,9 +247,16 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
       {/* Header */}
       <header className="guild-header">
         <h1 className="guild-title" data-testid="guild-title">The Guild Hall</h1>
-        <button className="logout-btn" onClick={onLogout} data-testid="logout-btn">
-          Leave Guild
-        </button>
+        <div className="header-buttons">
+          {isFounder && (
+            <button className="admin-btn" onClick={openAdminModal} data-testid="admin-btn">
+              ⚙️ Manage Roles
+            </button>
+          )}
+          <button className="logout-btn" onClick={onLogout} data-testid="logout-btn">
+            Leave Guild
+          </button>
+        </div>
       </header>
 
       {/* Coming Soon Areas - Top */}
@@ -289,6 +363,48 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
             </button>
             
             <p className="wallet-note">Make sure you're on Polygon network</p>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Modal - Role Management */}
+      {showAdminModal && isFounder && (
+        <div className="modal-overlay" onClick={() => setShowAdminModal(false)}>
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowAdminModal(false)}>×</button>
+            <h3>Manage Guild Roles</h3>
+            <p className="admin-subtitle">As Founder, you can assign roles to guild members</p>
+            
+            {adminError && <div className="error-message">{adminError}</div>}
+            {adminSuccess && <div className="success-message">{adminSuccess}</div>}
+            
+            {adminLoading ? (
+              <div className="admin-loading">Loading members...</div>
+            ) : (
+              <div className="users-list">
+                {allUsers.map((u) => (
+                  <div key={u.id} className="user-row">
+                    <div className="user-info">
+                      <span className="user-name">{u.username}</span>
+                      <span className="user-email">{u.email}</span>
+                    </div>
+                    <select 
+                      value={u.role || 'Member'} 
+                      onChange={(e) => updateUserRole(u.id, e.target.value)}
+                      className="role-select"
+                    >
+                      <option value="Founder">Founder</option>
+                      <option value="Elder">Elder</option>
+                      <option value="Noble">Noble</option>
+                      <option value="Knight">Knight</option>
+                      <option value="Squire">Squire</option>
+                      <option value="Initiate">Initiate</option>
+                      <option value="Member">Member</option>
+                    </select>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

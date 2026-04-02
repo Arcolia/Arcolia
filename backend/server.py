@@ -77,6 +77,10 @@ class ResetPasswordRequest(BaseModel):
 class ResendVerificationRequest(BaseModel):
     email: EmailStr
 
+class UpdateRoleRequest(BaseModel):
+    user_id: str
+    role: str
+
 # Email Templates
 def get_verification_email_html(username: str, verification_link: str) -> str:
     return f"""
@@ -360,7 +364,8 @@ async def login(request: LoginRequest):
             "username": user["username"],
             "email": user["email"],
             "email_verified": user["email_verified"],
-            "wallet_address": user.get("wallet_address")
+            "wallet_address": user.get("wallet_address"),
+            "role": user.get("role")
         }
     }
 
@@ -374,6 +379,7 @@ async def get_me(authorization: str = Header(None)):
         "email": user["email"],
         "email_verified": user["email_verified"],
         "wallet_address": user.get("wallet_address"),
+        "role": user.get("role"),
         "created_at": user.get("created_at")
     }
 
@@ -533,3 +539,59 @@ async def resend_verification(request: ResendVerificationRequest):
         response["verification_token"] = verification_token
     
     return response
+
+
+# Available roles (Founder is the highest)
+VALID_ROLES = ["Founder", "Elder", "Noble", "Knight", "Squire", "Initiate", "Member"]
+
+@app.post("/api/auth/update-role")
+async def update_role(request: UpdateRoleRequest, authorization: str = Header(None)):
+    # Get current user (must be authenticated)
+    current_user = get_current_user(authorization)
+    
+    # Only Founders can change roles
+    if current_user.get("role") != "Founder":
+        raise HTTPException(status_code=403, detail="Only Founders can change roles")
+    
+    # Validate role
+    if request.role not in VALID_ROLES:
+        raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {', '.join(VALID_ROLES)}")
+    
+    # Find target user
+    try:
+        target_user = users_collection.find_one({"_id": ObjectId(request.user_id)})
+    except:
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+    
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Update user role
+    users_collection.update_one(
+        {"_id": ObjectId(request.user_id)},
+        {"$set": {"role": request.role}}
+    )
+    
+    return {
+        "message": f"Role updated to {request.role}",
+        "user_id": request.user_id,
+        "role": request.role
+    }
+
+@app.get("/api/users")
+async def get_all_users(authorization: str = Header(None)):
+    # Get current user (must be authenticated)
+    current_user = get_current_user(authorization)
+    
+    # Only Founders can view all users
+    if current_user.get("role") != "Founder":
+        raise HTTPException(status_code=403, detail="Only Founders can view all users")
+    
+    users = list(users_collection.find({}, {"password_hash": 0}))
+    
+    # Convert ObjectId to string
+    for user in users:
+        user["id"] = str(user["_id"])
+        del user["_id"]
+    
+    return {"users": users}
