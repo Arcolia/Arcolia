@@ -79,6 +79,15 @@
   align-items: center;
 }
 
+.founder-controls {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
 .admin-btn {
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 0.9rem;

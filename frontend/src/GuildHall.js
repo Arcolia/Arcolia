@@ -513,7 +513,21 @@ function GuildHall({ user, token, onLogout, onUpdateUser, oathText }) {
 
       {/* Header */}
       <header className="guild-header">
+        {/* Founder Controls - Left Side */}
+        {isFounder && (
+          <div className="founder-controls">
+            <button className="admin-btn settings-btn" onClick={openSettingsModal} data-testid="settings-btn">
+              🛡️ Guild Settings
+            </button>
+            <button className="admin-btn" onClick={openAdminModal} data-testid="admin-btn">
+              👥 Manage Members
+            </button>
+          </div>
+        )}
+        
         <h1 className="guild-title" data-testid="guild-title">The Guild Hall</h1>
+        
+        {/* General Controls - Right Side */}
         <div className="header-buttons">
           <button className="header-btn rules-btn" onClick={() => setShowRulesModal(true)} data-testid="rules-btn">
             📜 Code & Oath
@@ -521,16 +535,6 @@ function GuildHall({ user, token, onLogout, onUpdateUser, oathText }) {
           <button className="header-btn donate-btn" onClick={() => setShowDonateModal(true)} data-testid="donate-btn">
             💎 Support Arcolia
           </button>
-          {isFounder && (
-            <>
-              <button className="admin-btn settings-btn" onClick={openSettingsModal} data-testid="settings-btn">
-                🛡️ Guild Settings
-              </button>
-              <button className="admin-btn" onClick={openAdminModal} data-testid="admin-btn">
-                👥 Manage Members
-              </button>
-            </>
-          )}
           <button className="logout-btn" onClick={onLogout} data-testid="logout-btn">
             Leave Guild
           </button>
