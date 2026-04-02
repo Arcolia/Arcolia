@@ -11,6 +11,7 @@ __pycache__/
 *.pyc
 
 # Local environment overrides (NOT the main .env files)
+# Main .env files ARE committed for Emergent deployment
 .env.local
 .env.development.local
 .env.test.local
@@ -39,11 +40,6 @@ coverage/
 # Misc
 .cache/
 *.tmp
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
+
+# Sensitive files - do not deploy
+memory/test_credentials.md

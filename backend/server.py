@@ -636,14 +636,15 @@ async def get_all_users(authorization: str = Header(None)):
     if current_user.get("role") != "Founder":
         raise HTTPException(status_code=403, detail="Only Founders can view all users")
     
-    users = list(users_collection.find({}, {"password_hash": 0}))
+    # Limit to 100 users for performance
+    users = list(users_collection.find({}, {"password_hash": 0}).limit(100))
     
     # Convert ObjectId to string
     for user in users:
         user["id"] = str(user["_id"])
         del user["_id"]
     
-    return {"users": users}
+    return {"users": users, "total": users_collection.count_documents({})}
 
 
 @app.get("/api/admin/settings")
