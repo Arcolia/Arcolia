@@ -5,8 +5,9 @@ import './GuildHall.css';
 const API_URL = process.env.REACT_APP_BACKEND_URL || '';
 
 // ARCO Token Configuration
-const ARCO_TOKEN_ADDRESS = '0x6D00EABF782Df498738f29e6558157d36518C663';
+const ARCO_TOKEN_ADDRESS = process.env.REACT_APP_ARCO_TOKEN_ADDRESS || '0x6D00EABF782Df498738f29e6558157d36518C663';
 const POLYGON_CHAIN_ID = 137;
+const POLYGON_RPC_URL = process.env.REACT_APP_POLYGON_RPC_URL || 'https://polygon-rpc.com';
 
 const ERC20_ABI = [
   'function balanceOf(address owner) view returns (uint256)',
@@ -39,7 +40,7 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
 
   const checkArcoBalance = async () => {
     try {
-      const provider = new ethers.JsonRpcProvider('https://polygon-rpc.com');
+      const provider = new ethers.JsonRpcProvider(POLYGON_RPC_URL);
       const tokenContract = new ethers.Contract(ARCO_TOKEN_ADDRESS, ERC20_ABI, provider);
       
       const balance = await tokenContract.balanceOf(walletAddress);

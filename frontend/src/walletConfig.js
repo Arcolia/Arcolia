@@ -3,7 +3,7 @@ import { defaultWagmiConfig } from '@web3modal/wagmi/react/config'
 import { polygon } from 'wagmi/chains'
 
 // WalletConnect Project ID
-const projectId = '2cfa96ac5508648ee6efcf6cd3566358'
+const projectId = process.env.REACT_APP_WALLETCONNECT_PROJECT_ID || '2cfa96ac5508648ee6efcf6cd3566358'
 
 const metadata = {
   name: 'Arcolia',
