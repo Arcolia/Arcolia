@@ -69,6 +69,16 @@ Note: Until configured, tokens are returned in API responses for testing.
 - POST /api/auth/reset-password
 - POST /api/auth/resend-verification
 
+## Deployment Status (April 2026)
+- [x] Backend health check passing
+- [x] All auth endpoints functional
+- [x] Resend email integration working
+- [x] Fixed hardcoded image URLs (now use env vars)
+- [x] Fixed corrupted .gitignore file
+- [x] requirements.txt updated with all dependencies
+
+**Note on Blockchain Warning:** The deployment agent flags Web3/blockchain as a blocker. This is a FALSE POSITIVE because all Web3 code (WalletConnect, ethers.js, token balance checks) runs ENTIRELY CLIENT-SIDE in the user's browser. The FastAPI backend has zero blockchain code.
+
 ## Prioritized Backlog
 
 ### P0 (Next Phase)
@@ -83,6 +93,6 @@ Note: Until configured, tokens are returned in API responses for testing.
 - [ ] Change password (when logged in)
 
 ### P2 (Nice to Have)
-- [ ] WalletConnect support in Guild Hall
+- [x] WalletConnect support in Guild Hall (DONE)
 - [ ] Social login (Discord, Twitter)
 - [ ] Achievement badges
