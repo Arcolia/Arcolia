@@ -700,3 +700,204 @@
   padding: 10px;
   border-radius: 6px;
 }
+
+
+/* Settings Modal */
+.settings-modal {
+  background: rgba(15, 15, 15, 0.98);
+  border: 1px solid rgba(201, 169, 98, 0.4);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 700px;
+  width: 95%;
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+}
+
+.settings-modal h3 {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.5rem;
+  color: #d4b978;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.settings-section {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.settings-section h4 {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.1rem;
+  color: #d4b978;
+  margin-bottom: 4px;
+}
+
+.section-note {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 16px;
+}
+
+/* Role Names Editor */
+.roles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.role-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+}
+
+.role-key {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.5);
+  min-width: 80px;
+}
+
+.role-name-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(201, 169, 98, 0.3);
+  border-radius: 6px;
+  color: #d4b978;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1rem;
+}
+
+.role-name-input:focus {
+  outline: none;
+  border-color: rgba(201, 169, 98, 0.6);
+}
+
+/* Room Access Grid */
+.rooms-access-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.room-access-card {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.room-header {
+  margin-bottom: 12px;
+}
+
+.room-name {
+  display: block;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1rem;
+  color: #d4b978;
+  margin-bottom: 2px;
+}
+
+.room-desc {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.room-roles-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.role-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.role-toggle:hover {
+  background: rgba(201, 169, 98, 0.1);
+}
+
+.role-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #d4b978;
+  cursor: pointer;
+}
+
+.role-toggle-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.role-toggle input:checked + .role-toggle-label {
+  color: #d4b978;
+}
+
+/* Save Button */
+.save-settings-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, rgba(201, 169, 98, 0.3) 0%, rgba(139, 115, 85, 0.3) 100%);
+  border: 1px solid rgba(201, 169, 98, 0.5);
+  border-radius: 8px;
+  color: #d4b978;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.1em;
+}
+
+.save-settings-btn:hover {
+  background: linear-gradient(135deg, rgba(201, 169, 98, 0.4) 0%, rgba(139, 115, 85, 0.4) 100%);
+  border-color: rgba(201, 169, 98, 0.8);
+  box-shadow: 0 0 20px rgba(201, 169, 98, 0.3);
+}
+
+.settings-modal .error-message,
+.settings-modal .success-message {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.settings-modal .success-message {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.settings-btn {
+  background: rgba(139, 115, 85, 0.2) !important;
+  border-color: rgba(139, 115, 85, 0.5) !important;
+}
+
+.settings-btn:hover {
+  background: rgba(139, 115, 85, 0.3) !important;
+}

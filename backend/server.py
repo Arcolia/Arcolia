@@ -46,10 +46,59 @@ client = MongoClient(MONGO_URL)
 db = client[DB_NAME]
 users_collection = db['users']
 verification_tokens_collection = db['verification_tokens']
+settings_collection = db['settings']
 
 # Create indexes
 users_collection.create_index("email", unique=True)
 users_collection.create_index("username", unique=True)
+
+# Default settings for roles and rooms
+DEFAULT_SETTINGS = {
+    "roles": {
+        "Founder": {"displayName": "Founder", "color": "#FFD700", "order": 0},
+        "Elder": {"displayName": "Elder", "color": "#d4b978", "order": 1},
+        "Noble": {"displayName": "Noble", "color": "#c9a962", "order": 2},
+        "Knight": {"displayName": "Knight", "color": "#a68b4b", "order": 3},
+        "Squire": {"displayName": "Squire", "color": "#8b7355", "order": 4},
+        "Initiate": {"displayName": "Initiate", "color": "#6b5344", "order": 5},
+        "Member": {"displayName": "Member", "color": "#555555", "order": 6}
+    },
+    "rooms": {
+        "sanctuary": {
+            "name": "The Sanctuary",
+            "description": "A place of peace and meditation",
+            "allowedRoles": ["Founder", "Elder", "Noble", "Knight"],
+            "requiresWallet": False
+        },
+        "treasury": {
+            "name": "Treasury",
+            "description": "The guild's wealth and resources",
+            "allowedRoles": ["Founder", "Elder", "Noble"],
+            "requiresWallet": False
+        },
+        "archives": {
+            "name": "Archives",
+            "description": "Ancient knowledge and records",
+            "allowedRoles": ["Founder", "Elder"],
+            "requiresWallet": False
+        },
+        "council": {
+            "name": "Council Chamber",
+            "description": "Where important decisions are made",
+            "allowedRoles": ["Founder"],
+            "requiresWallet": False
+        }
+    }
+}
+
+def get_settings():
+    """Get current settings or return defaults"""
+    settings = settings_collection.find_one({"_id": "guild_settings"})
+    if not settings:
+        return DEFAULT_SETTINGS.copy()
+    # Remove MongoDB _id from response
+    settings.pop("_id", None)
+    return settings
 
 # Pydantic models
 class SignupRequest(BaseModel):
@@ -595,3 +644,76 @@ async def get_all_users(authorization: str = Header(None)):
         del user["_id"]
     
     return {"users": users}
+
+
+@app.get("/api/admin/settings")
+async def get_guild_settings(authorization: str = Header(None)):
+    """Get current guild settings (Founders only)"""
+    current_user = get_current_user(authorization)
+    
+    if current_user.get("role") != "Founder":
+        raise HTTPException(status_code=403, detail="Only Founders can view settings")
+    
+    return get_settings()
+
+@app.post("/api/admin/settings")
+async def update_guild_settings(settings: dict, authorization: str = Header(None)):
+    """Update guild settings (Founders only)"""
+    current_user = get_current_user(authorization)
+    
+    if current_user.get("role") != "Founder":
+        raise HTTPException(status_code=403, detail="Only Founders can update settings")
+    
+    # Validate settings structure
+    if "roles" not in settings and "rooms" not in settings:
+        raise HTTPException(status_code=400, detail="Settings must contain 'roles' or 'rooms'")
+    
+    # Get current settings
+    current_settings = get_settings()
+    
+    # Merge with new settings
+    if "roles" in settings:
+        current_settings["roles"] = settings["roles"]
+    if "rooms" in settings:
+        current_settings["rooms"] = settings["rooms"]
+    
+    # Save to database
+    settings_collection.update_one(
+        {"_id": "guild_settings"},
+        {"$set": current_settings},
+        upsert=True
+    )
+    
+    return {"message": "Settings updated successfully", "settings": current_settings}
+
+@app.get("/api/settings/public")
+async def get_public_settings():
+    """Get public settings (role names and room info for display)"""
+    settings = get_settings()
+    return {
+        "roles": settings.get("roles", {}),
+        "rooms": settings.get("rooms", {})
+    }
+
+@app.post("/api/auth/check-room-access")
+async def check_room_access(room_id: str, authorization: str = Header(None)):
+    """Check if current user has access to a room"""
+    current_user = get_current_user(authorization)
+    settings = get_settings()
+    
+    room = settings.get("rooms", {}).get(room_id)
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    user_role = current_user.get("role", "Member")
+    allowed_roles = room.get("allowedRoles", [])
+    
+    has_access = user_role in allowed_roles
+    
+    return {
+        "room_id": room_id,
+        "room_name": room.get("name"),
+        "has_access": has_access,
+        "user_role": user_role,
+        "allowed_roles": allowed_roles
+    }

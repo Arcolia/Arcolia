@@ -76,6 +76,8 @@ Note: Until configured, tokens are returned in API responses for testing.
 - [x] Fixed hardcoded image URLs (now use env vars)
 - [x] Fixed corrupted .gitignore file
 - [x] requirements.txt updated with all dependencies
+- [x] Role management system (Founders can assign roles)
+- [x] Guild Settings panel (Founders can customize role names and room access)
 
 **Note on Blockchain Warning:** The deployment agent flags Web3/blockchain as a blocker. This is a FALSE POSITIVE because all Web3 code (WalletConnect, ethers.js, token balance checks) runs ENTIRELY CLIENT-SIDE in the user's browser. The FastAPI backend has zero blockchain code.
 

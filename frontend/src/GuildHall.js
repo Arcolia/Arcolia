@@ -21,10 +21,19 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
   const [walletError, setWalletError] = useState(null);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminError, setAdminError] = useState(null);
   const [adminSuccess, setAdminSuccess] = useState(null);
+  
+  // Settings state
+  const [guildSettings, setGuildSettings] = useState(null);
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsError, setSettingsError] = useState(null);
+  const [settingsSuccess, setSettingsSuccess] = useState(null);
+  const [editingRoles, setEditingRoles] = useState({});
+  const [editingRooms, setEditingRooms] = useState({});
 
   // Determine member status - use custom role if set, otherwise calculate from ARCO balance
   const getMemberStatus = () => {
@@ -208,6 +217,79 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
     fetchAllUsers();
   };
 
+  // Settings functions
+  const fetchSettings = async () => {
+    setSettingsLoading(true);
+    setSettingsError(null);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/settings`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.detail || 'Failed to fetch settings');
+      }
+      const data = await response.json();
+      setGuildSettings(data);
+      setEditingRoles(JSON.parse(JSON.stringify(data.roles || {})));
+      setEditingRooms(JSON.parse(JSON.stringify(data.rooms || {})));
+    } catch (err) {
+      setSettingsError(err.message);
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
+  const saveSettings = async () => {
+    setSettingsError(null);
+    setSettingsSuccess(null);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ roles: editingRoles, rooms: editingRooms })
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.detail || 'Failed to save settings');
+      }
+      const data = await response.json();
+      setSettingsSuccess('Settings saved successfully!');
+      setGuildSettings(data.settings);
+    } catch (err) {
+      setSettingsError(err.message);
+    }
+  };
+
+  const updateRoleDisplayName = (roleKey, newName) => {
+    setEditingRoles(prev => ({
+      ...prev,
+      [roleKey]: { ...prev[roleKey], displayName: newName }
+    }));
+  };
+
+  const toggleRoomAccess = (roomKey, roleKey) => {
+    setEditingRooms(prev => {
+      const room = prev[roomKey];
+      const currentRoles = room.allowedRoles || [];
+      const newRoles = currentRoles.includes(roleKey)
+        ? currentRoles.filter(r => r !== roleKey)
+        : [...currentRoles, roleKey];
+      return {
+        ...prev,
+        [roomKey]: { ...room, allowedRoles: newRoles }
+      };
+    });
+  };
+
+  const openSettingsModal = () => {
+    setShowSettingsModal(true);
+    fetchSettings();
+  };
+
   const handleNavigation = (area) => {
     if (!walletAddress) {
       setShowWalletModal(true);
@@ -249,9 +331,14 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
         <h1 className="guild-title" data-testid="guild-title">The Guild Hall</h1>
         <div className="header-buttons">
           {isFounder && (
-            <button className="admin-btn" onClick={openAdminModal} data-testid="admin-btn">
-              ⚙️ Manage Roles
-            </button>
+            <>
+              <button className="admin-btn settings-btn" onClick={openSettingsModal} data-testid="settings-btn">
+                🛡️ Guild Settings
+              </button>
+              <button className="admin-btn" onClick={openAdminModal} data-testid="admin-btn">
+                👥 Manage Members
+              </button>
+            </>
           )}
           <button className="logout-btn" onClick={onLogout} data-testid="logout-btn">
             Leave Guild
@@ -403,6 +490,78 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
                     </select>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Settings Modal - Guild Configuration */}
+      {showSettingsModal && isFounder && (
+        <div className="modal-overlay" onClick={() => setShowSettingsModal(false)}>
+          <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowSettingsModal(false)}>×</button>
+            <h3>Guild Settings</h3>
+            <p className="admin-subtitle">Configure roles and room access permissions</p>
+            
+            {settingsError && <div className="error-message">{settingsError}</div>}
+            {settingsSuccess && <div className="success-message">{settingsSuccess}</div>}
+            
+            {settingsLoading ? (
+              <div className="admin-loading">Loading settings...</div>
+            ) : (
+              <div className="settings-content">
+                {/* Role Names Section */}
+                <div className="settings-section">
+                  <h4>Role Display Names</h4>
+                  <p className="section-note">Customize how each role appears in the guild</p>
+                  <div className="roles-list">
+                    {Object.entries(editingRoles).sort((a, b) => a[1].order - b[1].order).map(([key, role]) => (
+                      <div key={key} className="role-edit-row">
+                        <span className="role-key">{key}</span>
+                        <input
+                          type="text"
+                          value={role.displayName}
+                          onChange={(e) => updateRoleDisplayName(key, e.target.value)}
+                          className="role-name-input"
+                          placeholder="Display name"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Room Access Section */}
+                <div className="settings-section">
+                  <h4>Room Access Permissions</h4>
+                  <p className="section-note">Control which roles can access each room</p>
+                  <div className="rooms-access-grid">
+                    {Object.entries(editingRooms).map(([roomKey, room]) => (
+                      <div key={roomKey} className="room-access-card">
+                        <div className="room-header">
+                          <span className="room-name">{room.name}</span>
+                          <span className="room-desc">{room.description}</span>
+                        </div>
+                        <div className="room-roles-toggles">
+                          {Object.keys(editingRoles).sort((a, b) => editingRoles[a].order - editingRoles[b].order).map(roleKey => (
+                            <label key={roleKey} className="role-toggle">
+                              <input
+                                type="checkbox"
+                                checked={room.allowedRoles?.includes(roleKey) || false}
+                                onChange={() => toggleRoomAccess(roomKey, roleKey)}
+                              />
+                              <span className="role-toggle-label">{editingRoles[roleKey]?.displayName || roleKey}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <button className="save-settings-btn" onClick={saveSettings}>
+                  Save Settings
+                </button>
               </div>
             )}
           </div>
