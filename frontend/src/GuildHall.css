@@ -42,22 +42,26 @@
   z-index: 20;
   padding: 24px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
 }
 
 .guild-title {
   font-family: 'Cinzel', Georgia, serif;
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-size: clamp(1.8rem, 5vw, 3rem);
   font-weight: 500;
   color: #d4b978;
-  letter-spacing: 0.2em;
-  text-shadow: 0 2px 20px rgba(0,0,0,0.8);
+  letter-spacing: 0.25em;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.8), 0 0 40px rgba(201, 169, 98, 0.3);
   margin: 0;
+  text-align: center;
 }
 
 .logout-btn {
+  position: absolute;
+  top: 24px;
+  right: 24px;
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-size: 0.9rem;
   padding: 8px 20px;
