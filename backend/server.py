@@ -47,47 +47,63 @@ db = client[DB_NAME]
 users_collection = db['users']
 verification_tokens_collection = db['verification_tokens']
 settings_collection = db['settings']
+messages_collection = db['messages']
+donations_collection = db['donations']
 
 # Create indexes
 users_collection.create_index("email", unique=True)
 users_collection.create_index("username", unique=True)
+messages_collection.create_index([("room", 1), ("created_at", -1)])
 
-# Default settings for roles and rooms
+# Treasury wallet for donations
+TREASURY_WALLET = "0xd858646D90cA89a987942509208b272983d53B65"
+
+# Default settings for roles and rooms with ARCO requirements
 DEFAULT_SETTINGS = {
     "roles": {
-        "Founder": {"displayName": "Founder", "color": "#FFD700", "order": 0},
-        "Elder": {"displayName": "Elder", "color": "#d4b978", "order": 1},
-        "Noble": {"displayName": "Noble", "color": "#c9a962", "order": 2},
-        "Knight": {"displayName": "Knight", "color": "#a68b4b", "order": 3},
-        "Squire": {"displayName": "Squire", "color": "#8b7355", "order": 4},
-        "Initiate": {"displayName": "Initiate", "color": "#6b5344", "order": 5},
-        "Member": {"displayName": "Member", "color": "#555555", "order": 6}
+        "Founder": {"displayName": "Founder", "color": "#FFD700", "order": 0, "bypassArcoRequirement": True},
+        "Elder": {"displayName": "Elder", "color": "#d4b978", "order": 1, "bypassArcoRequirement": True},
+        "Noble": {"displayName": "Noble", "color": "#c9a962", "order": 2, "bypassArcoRequirement": False},
+        "Knight": {"displayName": "Knight", "color": "#a68b4b", "order": 3, "bypassArcoRequirement": False},
+        "Squire": {"displayName": "Squire", "color": "#8b7355", "order": 4, "bypassArcoRequirement": False},
+        "Initiate": {"displayName": "Initiate", "color": "#6b5344", "order": 5, "bypassArcoRequirement": False},
+        "Member": {"displayName": "Member", "color": "#555555", "order": 6, "bypassArcoRequirement": False}
     },
     "rooms": {
+        "commons": {
+            "name": "The Commons",
+            "description": "Community chat for all ARCO holders",
+            "arcoRequired": 1,
+            "bypassRoles": ["Founder", "Elder"]
+        },
         "sanctuary": {
             "name": "The Sanctuary",
             "description": "A place of peace and meditation",
-            "allowedRoles": ["Founder", "Elder", "Noble", "Knight"],
-            "requiresWallet": False
+            "arcoRequired": 500000,
+            "bypassRoles": ["Founder", "Elder"]
         },
         "treasury": {
             "name": "Treasury",
             "description": "The guild's wealth and resources",
-            "allowedRoles": ["Founder", "Elder", "Noble"],
-            "requiresWallet": False
+            "arcoRequired": 5000000,
+            "bypassRoles": ["Founder", "Elder"]
         },
         "archives": {
             "name": "Archives",
             "description": "Ancient knowledge and records",
-            "allowedRoles": ["Founder", "Elder"],
-            "requiresWallet": False
+            "arcoRequired": 25000000,
+            "bypassRoles": ["Founder", "Elder"]
         },
         "council": {
             "name": "Council Chamber",
             "description": "Where important decisions are made",
-            "allowedRoles": ["Founder"],
-            "requiresWallet": False
+            "arcoRequired": 100000000,
+            "bypassRoles": ["Founder", "Elder"]
         }
+    },
+    "donations": {
+        "wallet": TREASURY_WALLET,
+        "acceptedCurrencies": ["ARCO", "BTC", "ETH", "MATIC", "SOL", "PAXG"]
     }
 }
 
@@ -418,7 +434,8 @@ async def login(request: LoginRequest):
             "email": user["email"],
             "email_verified": user["email_verified"],
             "wallet_address": user.get("wallet_address"),
-            "role": user.get("role")
+            "role": user.get("role"),
+            "oath_accepted": user.get("oath_accepted", False)
         }
     }
 
@@ -433,6 +450,7 @@ async def get_me(authorization: str = Header(None)):
         "email_verified": user["email_verified"],
         "wallet_address": user.get("wallet_address"),
         "role": user.get("role"),
+        "oath_accepted": user.get("oath_accepted", False),
         "created_at": user.get("created_at")
     }
 
@@ -788,3 +806,253 @@ async def check_room_access(room_id: str, authorization: str = Header(None)):
         "user_role": user_role,
         "allowed_roles": allowed_roles
     }
+
+
+# ============================================
+# OATH & RULES ENDPOINTS
+# ============================================
+
+ARCOLIA_OATH = """The Arcolia Code & Oath of Entry
+
+The Oath of Entry
+
+I enter Arcolia not as a consumer, but as a steward of knowledge.
+I will seek understanding before judgment, and truth before status.
+I will share what I learn, and protect the dignity of those who learn beside me.
+I will not exploit the guild, nor diminish its people.
+I will challenge ideas without cruelty, and build without arrogance.
+
+If I am given access, I will treat it as responsibility.
+If I am given influence, I will wield it with humility.
+
+I understand that Arcolia is not a marketplace of ego, but a commons of minds.
+By crossing this threshold, I accept that the value of Arcolia is created not by tokens, but by conduct.
+
+So I enter — not to take, but to contribute.
+
+I. Non-Negotiable Rules
+1) Respect is mandatory. Harassment, discrimination, or intimidation are forbidden.
+2) Integrity over influence. No scams, deception, or impersonation.
+3) Knowledge must be shared in good faith. No sabotage or toxic gatekeeping.
+4) No exploitation of the guild. No spam, coercive financial advice, or unsolicited promotion.
+5) Member safety is sacred. No doxxing, threats, or privacy violations.
+6) Arcolia rejects extremism and dehumanisation.
+
+II. Guild Guidelines
+7) Speak with purpose and add value.
+8) Challenge ideas, not people.
+9) Build more than you posture.
+10) Protect the tone and atmosphere of each space.
+11) Responsibility increases with access and influence."""
+
+@app.get("/api/oath")
+async def get_oath():
+    """Get the Arcolia oath and rules"""
+    return {"oath": ARCOLIA_OATH}
+
+@app.post("/api/oath/accept")
+async def accept_oath(authorization: str = Header(None)):
+    """Accept the oath (required for first-time entry)"""
+    current_user = get_current_user(authorization)
+    
+    users_collection.update_one(
+        {"_id": current_user["_id"]},
+        {"$set": {"oath_accepted": True, "oath_accepted_at": datetime.now(timezone.utc)}}
+    )
+    
+    return {"message": "Oath accepted. Welcome to Arcolia."}
+
+# ============================================
+# CHAT/MESSAGES ENDPOINTS
+# ============================================
+
+@app.get("/api/messages/{room_id}")
+async def get_messages(room_id: str, limit: int = 50, authorization: str = Header(None)):
+    """Get messages for a room"""
+    current_user = get_current_user(authorization)
+    
+    # Check room access
+    settings = get_settings()
+    room = settings.get("rooms", {}).get(room_id)
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    user_role = current_user.get("role", "Member")
+    bypass_roles = room.get("bypassRoles", ["Founder", "Elder"])
+    
+    # Founders and Elders bypass ARCO requirements
+    if user_role not in bypass_roles:
+        # User needs to check ARCO balance client-side before accessing
+        pass
+    
+    messages = list(messages_collection.find(
+        {"room": room_id},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(limit))
+    
+    # Reverse to get chronological order
+    messages.reverse()
+    
+    return {"messages": messages, "room": room_id}
+
+@app.post("/api/messages/{room_id}")
+async def post_message(room_id: str, message: dict, authorization: str = Header(None)):
+    """Post a message to a room"""
+    current_user = get_current_user(authorization)
+    
+    content = message.get("content", "").strip()
+    if not content:
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+    if len(content) > 2000:
+        raise HTTPException(status_code=400, detail="Message too long (max 2000 characters)")
+    
+    # Check room access
+    settings = get_settings()
+    room = settings.get("rooms", {}).get(room_id)
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    
+    new_message = {
+        "room": room_id,
+        "user_id": str(current_user["_id"]),
+        "username": current_user["username"],
+        "role": current_user.get("role", "Member"),
+        "content": content,
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    messages_collection.insert_one(new_message)
+    new_message.pop("_id", None)
+    
+    return {"message": "Message sent", "data": new_message}
+
+# ============================================
+# DONATIONS ENDPOINTS
+# ============================================
+
+@app.get("/api/donations/info")
+async def get_donation_info():
+    """Get donation information"""
+    settings = get_settings()
+    donation_settings = settings.get("donations", {})
+    
+    return {
+        "wallet": donation_settings.get("wallet", TREASURY_WALLET),
+        "acceptedCurrencies": donation_settings.get("acceptedCurrencies", ["ARCO", "BTC", "ETH", "MATIC", "SOL", "PAXG"]),
+        "note": "Donations support the continued growth of Arcolia. Rankings are increased manually by Founders based on contributions."
+    }
+
+@app.post("/api/donations/record")
+async def record_donation(donation: dict, authorization: str = Header(None)):
+    """Record a donation (user self-reports, Founders verify)"""
+    current_user = get_current_user(authorization)
+    
+    amount = donation.get("amount")
+    currency = donation.get("currency")
+    tx_hash = donation.get("tx_hash", "")
+    
+    if not amount or not currency:
+        raise HTTPException(status_code=400, detail="Amount and currency required")
+    
+    donation_record = {
+        "user_id": str(current_user["_id"]),
+        "username": current_user["username"],
+        "amount": amount,
+        "currency": currency,
+        "tx_hash": tx_hash,
+        "status": "pending",  # pending, verified, rejected
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    result = donations_collection.insert_one(donation_record)
+    
+    return {
+        "message": "Donation recorded. A Founder will verify and update your ranking.",
+        "donation_id": str(result.inserted_id)
+    }
+
+@app.get("/api/donations/pending")
+async def get_pending_donations(authorization: str = Header(None)):
+    """Get pending donations (Founders only)"""
+    current_user = get_current_user(authorization)
+    
+    if current_user.get("role") not in ["Founder", "Elder"]:
+        raise HTTPException(status_code=403, detail="Only Founders and Elders can view pending donations")
+    
+    donations = list(donations_collection.find(
+        {"status": "pending"},
+        {"_id": 1, "user_id": 1, "username": 1, "amount": 1, "currency": 1, "tx_hash": 1, "created_at": 1}
+    ).sort("created_at", -1).limit(50))
+    
+    for d in donations:
+        d["id"] = str(d["_id"])
+        del d["_id"]
+    
+    return {"donations": donations}
+
+@app.post("/api/donations/verify")
+async def verify_donation(data: dict, authorization: str = Header(None)):
+    """Verify a donation and optionally upgrade user role (Founders only)"""
+    current_user = get_current_user(authorization)
+    
+    if current_user.get("role") not in ["Founder", "Elder"]:
+        raise HTTPException(status_code=403, detail="Only Founders and Elders can verify donations")
+    
+    donation_id = data.get("donation_id")
+    status = data.get("status")  # verified or rejected
+    new_role = data.get("new_role")  # optional role upgrade
+    
+    if not donation_id or status not in ["verified", "rejected"]:
+        raise HTTPException(status_code=400, detail="Invalid request")
+    
+    try:
+        donation = donations_collection.find_one({"_id": ObjectId(donation_id)})
+    except:
+        raise HTTPException(status_code=400, detail="Invalid donation ID")
+    
+    if not donation:
+        raise HTTPException(status_code=404, detail="Donation not found")
+    
+    # Update donation status
+    donations_collection.update_one(
+        {"_id": ObjectId(donation_id)},
+        {"$set": {"status": status, "verified_by": current_user["username"], "verified_at": datetime.now(timezone.utc)}}
+    )
+    
+    # Optionally upgrade user role
+    if status == "verified" and new_role:
+        users_collection.update_one(
+            {"_id": ObjectId(donation["user_id"])},
+            {"$set": {"role": new_role}}
+        )
+        return {"message": f"Donation verified and user upgraded to {new_role}"}
+    
+    return {"message": f"Donation {status}"}
+
+# ============================================
+# ROOM ACCESS CHECK (Updated with ARCO requirements)
+# ============================================
+
+@app.get("/api/rooms")
+async def get_rooms(authorization: str = Header(None)):
+    """Get all rooms with their requirements"""
+    current_user = get_current_user(authorization)
+    settings = get_settings()
+    
+    rooms = settings.get("rooms", {})
+    user_role = current_user.get("role", "Member")
+    
+    room_list = []
+    for room_id, room in rooms.items():
+        bypass_roles = room.get("bypassRoles", ["Founder", "Elder"])
+        bypasses_arco = user_role in bypass_roles
+        
+        room_list.append({
+            "id": room_id,
+            "name": room.get("name"),
+            "description": room.get("description"),
+            "arcoRequired": room.get("arcoRequired", 0),
+            "bypassesArco": bypasses_arco
+        })
+    
+    return {"rooms": room_list, "userRole": user_role}

@@ -565,3 +565,168 @@ html, body, #root, .app {
     font-size: 1.5rem;
   }
 }
+
+
+/* ================================
+   OATH MODAL STYLES
+   ================================ */
+
+.oath-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.oath-modal {
+  background: linear-gradient(135deg, rgba(20, 15, 10, 0.98) 0%, rgba(10, 8, 5, 0.98) 100%);
+  border: 1px solid rgba(201, 169, 98, 0.4);
+  border-radius: 16px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 40px;
+  animation: slideUp 0.4s ease-out;
+}
+
+.oath-modal h2 {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.8rem;
+  color: var(--gold);
+  text-align: center;
+  margin-bottom: 30px;
+  letter-spacing: 0.1em;
+  text-shadow: 0 2px 20px rgba(201, 169, 98, 0.3);
+}
+
+.oath-content {
+  margin-bottom: 24px;
+}
+
+.oath-section {
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(201, 169, 98, 0.2);
+}
+
+.oath-section h3,
+.rules-section h3 {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.1rem;
+  color: var(--gold);
+  margin-bottom: 16px;
+  letter-spacing: 0.05em;
+}
+
+.oath-section p {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.7;
+  margin-bottom: 8px;
+  font-style: italic;
+}
+
+.oath-conclusion {
+  margin-top: 16px !important;
+  font-size: 1.15rem !important;
+  color: var(--gold-light) !important;
+  text-align: center;
+}
+
+.rules-section {
+  margin-bottom: 24px;
+}
+
+.rules-section ol {
+  padding-left: 24px;
+  margin-bottom: 20px;
+}
+
+.rules-section li {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.oath-warning {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+  text-align: center;
+  color: #f87171;
+  font-size: 0.95rem;
+}
+
+.oath-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+}
+
+.oath-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+
+.accept-oath-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(201, 169, 98, 0.3) 0%, rgba(139, 115, 85, 0.3) 100%);
+  border: 1px solid rgba(201, 169, 98, 0.5);
+  border-radius: 8px;
+  color: var(--gold);
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.1em;
+}
+
+.accept-oath-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(201, 169, 98, 0.4) 0%, rgba(139, 115, 85, 0.4) 100%);
+  border-color: rgba(201, 169, 98, 0.8);
+  box-shadow: 0 0 30px rgba(201, 169, 98, 0.3);
+}
+
+.accept-oath-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .oath-modal {
+    padding: 24px;
+    margin: 10px;
+  }
+  
+  .oath-modal h2 {
+    font-size: 1.4rem;
+  }
+  
+  .oath-section p {
+    font-size: 0.95rem;
+  }
+}

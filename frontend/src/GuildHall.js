@@ -14,7 +14,7 @@ const ERC20_ABI = [
   'function decimals() view returns (uint8)',
 ];
 
-function GuildHall({ user, token, onLogout, onUpdateUser }) {
+function GuildHall({ user, token, onLogout, onUpdateUser, oathText }) {
   const [walletAddress, setWalletAddress] = useState(user?.wallet_address || null);
   const [arcoBalance, setArcoBalance] = useState(null);
   const [isConnectingWallet, setIsConnectingWallet] = useState(false);
@@ -22,10 +22,25 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showRulesModal, setShowRulesModal] = useState(false);
+  const [showDonateModal, setShowDonateModal] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false);
+  const [currentChatRoom, setCurrentChatRoom] = useState(null);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminError, setAdminError] = useState(null);
   const [adminSuccess, setAdminSuccess] = useState(null);
+  const [rooms, setRooms] = useState([]);
+  
+  // Donation state
+  const [donationAmount, setDonationAmount] = useState('');
+  const [donationCurrency, setDonationCurrency] = useState('ARCO');
+  const [donationTxHash, setDonationTxHash] = useState('');
+  const [donationSuccess, setDonationSuccess] = useState(null);
+  const [donationError, setDonationError] = useState(null);
   
   // Settings state
   const [guildSettings, setGuildSettings] = useState(null);
@@ -34,6 +49,19 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
   const [settingsSuccess, setSettingsSuccess] = useState(null);
   const [editingRoles, setEditingRoles] = useState({});
   const [editingRooms, setEditingRooms] = useState({});
+
+  // Treasury wallet
+  const TREASURY_WALLET = "0xd858646D90cA89a987942509208b272983d53B65";
+  const ACCEPTED_CURRENCIES = ["ARCO", "BTC", "ETH", "MATIC", "SOL", "PAXG"];
+
+  // Room ARCO requirements
+  const ROOM_REQUIREMENTS = {
+    commons: 1,
+    sanctuary: 500000,
+    treasury: 5000000,
+    archives: 25000000,
+    council: 100000000
+  };
 
   // Determine member status - use custom role if set, otherwise calculate from ARCO balance
   const getMemberStatus = () => {
@@ -265,6 +293,115 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
     fetchAllUsers();
   };
 
+  // Chat functions
+  const openChatRoom = async (roomId) => {
+    const userRole = user?.role || 'Member';
+    const bypassRoles = ['Founder', 'Elder'];
+    const canBypass = bypassRoles.includes(userRole);
+    const required = ROOM_REQUIREMENTS[roomId] || 0;
+    
+    // Check if user has access
+    if (!canBypass && (arcoBalance === null || arcoBalance < required)) {
+      alert(`You need ${required.toLocaleString()} ARCO to access this room. Connect your wallet and ensure you hold enough ARCO.`);
+      return;
+    }
+    
+    setCurrentChatRoom(roomId);
+    setShowChatModal(true);
+    setChatLoading(true);
+    
+    try {
+      const response = await fetch(`${API_URL}/api/messages/${roomId}?limit=50`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setChatMessages(data.messages || []);
+      }
+    } catch (err) {
+      console.error('Error loading messages:', err);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !currentChatRoom) return;
+    
+    try {
+      const response = await fetch(`${API_URL}/api/messages/${currentChatRoom}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ content: newMessage })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setChatMessages(prev => [...prev, data.data]);
+        setNewMessage('');
+      }
+    } catch (err) {
+      console.error('Error sending message:', err);
+    }
+  };
+
+  // Donation functions
+  const submitDonation = async () => {
+    if (!donationAmount || !donationCurrency) {
+      setDonationError('Please enter amount and select currency');
+      return;
+    }
+    
+    setDonationError(null);
+    setDonationSuccess(null);
+    
+    try {
+      const response = await fetch(`${API_URL}/api/donations/record`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          amount: donationAmount,
+          currency: donationCurrency,
+          tx_hash: donationTxHash
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setDonationSuccess(data.message);
+        setDonationAmount('');
+        setDonationTxHash('');
+      } else {
+        const data = await response.json();
+        throw new Error(data.detail || 'Failed to record donation');
+      }
+    } catch (err) {
+      setDonationError(err.message);
+    }
+  };
+
+  // Check room access
+  const canAccessRoom = (roomId) => {
+    const userRole = user?.role || 'Member';
+    const bypassRoles = ['Founder', 'Elder'];
+    if (bypassRoles.includes(userRole)) return true;
+    
+    const required = ROOM_REQUIREMENTS[roomId] || 0;
+    return arcoBalance !== null && arcoBalance >= required;
+  };
+
+  const formatArcoRequirement = (amount) => {
+    if (amount >= 1000000) return `${(amount / 1000000).toFixed(0)}M`;
+    if (amount >= 1000) return `${(amount / 1000).toFixed(0)}K`;
+    return amount.toString();
+  };
+
   // Settings functions
   const fetchSettings = async () => {
     setSettingsLoading(true);
@@ -378,6 +515,12 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
       <header className="guild-header">
         <h1 className="guild-title" data-testid="guild-title">The Guild Hall</h1>
         <div className="header-buttons">
+          <button className="header-btn rules-btn" onClick={() => setShowRulesModal(true)} data-testid="rules-btn">
+            📜 Code & Oath
+          </button>
+          <button className="header-btn donate-btn" onClick={() => setShowDonateModal(true)} data-testid="donate-btn">
+            💎 Support Arcolia
+          </button>
           {isFounder && (
             <>
               <button className="admin-btn settings-btn" onClick={openSettingsModal} data-testid="settings-btn">
@@ -394,26 +537,38 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
         </div>
       </header>
 
+      {/* The Commons Chat - Available to all with 1+ ARCO */}
+      <div className="commons-chat-trigger">
+        <button 
+          className={`commons-btn ${canAccessRoom('commons') ? 'accessible' : 'locked'}`}
+          onClick={() => openChatRoom('commons')}
+          data-testid="commons-btn"
+        >
+          💬 The Commons
+          <span className="arco-req">1 ARCO</span>
+        </button>
+      </div>
+
       {/* Coming Soon Areas - Top */}
       <div className="coming-soon-areas">
         <button 
-          className="coming-soon-btn left"
-          onClick={() => handleComingSoon('archives')}
+          className={`coming-soon-btn left ${canAccessRoom('archives') ? 'accessible' : ''}`}
+          onClick={() => openChatRoom('archives')}
           data-testid="coming-soon-left"
         >
-          <span className="lock-icon">🔒</span>
+          <span className="lock-icon">{canAccessRoom('archives') ? '📚' : '🔒'}</span>
           <span className="area-name">Archives</span>
-          <span className="coming-soon-text">Coming Soon</span>
+          <span className="arco-requirement">{formatArcoRequirement(ROOM_REQUIREMENTS.archives)} ARCO</span>
         </button>
         
         <button 
-          className="coming-soon-btn right"
-          onClick={() => handleComingSoon('council-chamber')}
+          className={`coming-soon-btn right ${canAccessRoom('council') ? 'accessible' : ''}`}
+          onClick={() => openChatRoom('council')}
           data-testid="coming-soon-right"
         >
-          <span className="lock-icon">🔒</span>
+          <span className="lock-icon">{canAccessRoom('council') ? '👑' : '🔒'}</span>
           <span className="area-name">Council Chamber</span>
-          <span className="coming-soon-text">Coming Soon</span>
+          <span className="arco-requirement">{formatArcoRequirement(ROOM_REQUIREMENTS.council)} ARCO</span>
         </button>
       </div>
 
@@ -459,25 +614,143 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
       {/* Navigation Areas - Bottom */}
       <div className="navigation-areas">
         <button 
-          className={`nav-area-btn sanctuary ${!walletAddress ? 'locked' : ''}`}
-          onClick={() => handleNavigation('sanctuary')}
+          className={`nav-area-btn sanctuary ${canAccessRoom('sanctuary') ? 'accessible' : 'locked'}`}
+          onClick={() => openChatRoom('sanctuary')}
           data-testid="nav-sanctuary"
         >
-          <span className="nav-icon">{walletAddress ? '🕯️' : '🔒'}</span>
+          <span className="nav-icon">{canAccessRoom('sanctuary') ? '🕯️' : '🔒'}</span>
           <span className="nav-name">The Sanctuary</span>
-          <span className="nav-hint">{walletAddress ? 'Find peace within' : 'Connect wallet to access'}</span>
+          <span className="nav-hint">{formatArcoRequirement(ROOM_REQUIREMENTS.sanctuary)} ARCO required</span>
         </button>
 
         <button 
-          className={`nav-area-btn treasury ${!walletAddress ? 'locked' : ''}`}
-          onClick={() => handleNavigation('treasury')}
+          className={`nav-area-btn treasury ${canAccessRoom('treasury') ? 'accessible' : 'locked'}`}
+          onClick={() => openChatRoom('treasury')}
           data-testid="nav-treasury"
         >
-          <span className="nav-icon">{walletAddress ? '💰' : '🔒'}</span>
+          <span className="nav-icon">{canAccessRoom('treasury') ? '💰' : '🔒'}</span>
           <span className="nav-name">Treasury</span>
-          <span className="nav-hint">{walletAddress ? 'Guild wealth' : 'Connect wallet to access'}</span>
+          <span className="nav-hint">{formatArcoRequirement(ROOM_REQUIREMENTS.treasury)} ARCO required</span>
         </button>
       </div>
+
+      {/* Rules Modal */}
+      {showRulesModal && (
+        <div className="modal-overlay" onClick={() => setShowRulesModal(false)}>
+          <div className="rules-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowRulesModal(false)}>×</button>
+            <h3>The Arcolia Code & Oath</h3>
+            <div className="rules-content">
+              <pre>{oathText}</pre>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Donate Modal */}
+      {showDonateModal && (
+        <div className="modal-overlay" onClick={() => setShowDonateModal(false)}>
+          <div className="donate-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowDonateModal(false)}>×</button>
+            <h3>Support Arcolia</h3>
+            <p className="donate-subtitle">Donations support the continued growth of Arcolia. Contributors may receive ranking upgrades based on their generosity.</p>
+            
+            <div className="treasury-info">
+              <label>Treasury Wallet (Polygon)</label>
+              <div className="wallet-display">
+                <code>{TREASURY_WALLET}</code>
+                <button onClick={() => navigator.clipboard.writeText(TREASURY_WALLET)} className="copy-btn">
+                  📋
+                </button>
+              </div>
+            </div>
+            
+            <div className="donation-form">
+              <div className="form-row">
+                <input
+                  type="number"
+                  placeholder="Amount"
+                  value={donationAmount}
+                  onChange={(e) => setDonationAmount(e.target.value)}
+                  className="donation-input"
+                />
+                <select 
+                  value={donationCurrency} 
+                  onChange={(e) => setDonationCurrency(e.target.value)}
+                  className="currency-select"
+                >
+                  {ACCEPTED_CURRENCIES.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <input
+                type="text"
+                placeholder="Transaction Hash (optional)"
+                value={donationTxHash}
+                onChange={(e) => setDonationTxHash(e.target.value)}
+                className="tx-hash-input"
+              />
+              
+              {donationError && <div className="error-message">{donationError}</div>}
+              {donationSuccess && <div className="success-message">{donationSuccess}</div>}
+              
+              <button className="submit-donation-btn" onClick={submitDonation}>
+                Record Donation
+              </button>
+              
+              <p className="donation-note">
+                After sending your donation to the treasury wallet, record it here. A Founder will verify and may upgrade your ranking.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Chat Modal */}
+      {showChatModal && currentChatRoom && (
+        <div className="modal-overlay" onClick={() => setShowChatModal(false)}>
+          <div className="chat-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowChatModal(false)}>×</button>
+            <h3>{currentChatRoom === 'commons' ? 'The Commons' : 
+                 currentChatRoom === 'sanctuary' ? 'The Sanctuary' :
+                 currentChatRoom === 'treasury' ? 'Treasury' :
+                 currentChatRoom === 'archives' ? 'Archives' :
+                 currentChatRoom === 'council' ? 'Council Chamber' : 'Chat'}</h3>
+            
+            <div className="chat-messages">
+              {chatLoading ? (
+                <div className="chat-loading">Loading messages...</div>
+              ) : chatMessages.length === 0 ? (
+                <div className="chat-empty">No messages yet. Be the first to speak!</div>
+              ) : (
+                chatMessages.map((msg, i) => (
+                  <div key={i} className={`chat-message ${msg.user_id === user?.id ? 'own' : ''}`}>
+                    <div className="message-header">
+                      <span className="message-author">{msg.username}</span>
+                      <span className="message-role">{msg.role}</span>
+                    </div>
+                    <div className="message-content">{msg.content}</div>
+                  </div>
+                ))
+              )}
+            </div>
+            
+            <div className="chat-input-area">
+              <input
+                type="text"
+                placeholder="Type your message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                className="chat-input"
+              />
+              <button className="send-btn" onClick={sendMessage}>Send</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Wallet Connection Modal */}
       {showWalletModal && (

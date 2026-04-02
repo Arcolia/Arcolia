@@ -967,3 +967,434 @@
 .settings-btn:hover {
   background: rgba(139, 115, 85, 0.3) !important;
 }
+
+
+/* ================================
+   HEADER BUTTONS
+   ================================ */
+
+.header-btn {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.85rem;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.header-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.rules-btn {
+  border-color: rgba(201, 169, 98, 0.4);
+  color: #d4b978;
+}
+
+.rules-btn:hover {
+  background: rgba(201, 169, 98, 0.15);
+  border-color: rgba(201, 169, 98, 0.7);
+}
+
+.donate-btn {
+  border-color: rgba(147, 51, 234, 0.4);
+  color: #a78bfa;
+}
+
+.donate-btn:hover {
+  background: rgba(147, 51, 234, 0.15);
+  border-color: rgba(147, 51, 234, 0.7);
+}
+
+/* ================================
+   COMMONS CHAT BUTTON
+   ================================ */
+
+.commons-chat-trigger {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+}
+
+.commons-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 24px;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  border-radius: 12px;
+  color: #4ade80;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.commons-btn:hover {
+  background: rgba(74, 222, 128, 0.2);
+  border-color: rgba(74, 222, 128, 0.7);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.2);
+}
+
+.commons-btn.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.commons-btn .arco-req {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+/* ================================
+   ARCO REQUIREMENTS
+   ================================ */
+
+.arco-requirement {
+  font-size: 0.7rem;
+  color: rgba(201, 169, 98, 0.8);
+  margin-top: 2px;
+}
+
+.coming-soon-btn.accessible {
+  border-color: rgba(201, 169, 98, 0.5);
+  background: rgba(201, 169, 98, 0.1);
+}
+
+.coming-soon-btn.accessible:hover {
+  border-color: rgba(201, 169, 98, 0.8);
+  background: rgba(201, 169, 98, 0.2);
+}
+
+.nav-area-btn.accessible {
+  border-color: rgba(201, 169, 98, 0.5);
+}
+
+.nav-area-btn.accessible:hover {
+  background: rgba(201, 169, 98, 0.15);
+  border-color: rgba(201, 169, 98, 0.8);
+}
+
+/* ================================
+   RULES MODAL
+   ================================ */
+
+.rules-modal {
+  background: rgba(15, 15, 15, 0.98);
+  border: 1px solid rgba(201, 169, 98, 0.4);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 600px;
+  width: 95%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+}
+
+.rules-modal h3 {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.4rem;
+  color: #d4b978;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.rules-content {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.rules-content pre {
+  white-space: pre-wrap;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.7;
+}
+
+/* ================================
+   DONATE MODAL
+   ================================ */
+
+.donate-modal {
+  background: rgba(15, 15, 15, 0.98);
+  border: 1px solid rgba(147, 51, 234, 0.4);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 500px;
+  width: 95%;
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+}
+
+.donate-modal h3 {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.4rem;
+  color: #a78bfa;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.donate-subtitle {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.treasury-info {
+  margin-bottom: 24px;
+}
+
+.treasury-info label {
+  display: block;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 8px;
+}
+
+.wallet-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(147, 51, 234, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.wallet-display code {
+  flex: 1;
+  font-size: 0.8rem;
+  color: #a78bfa;
+  word-break: break-all;
+}
+
+.copy-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 4px 8px;
+}
+
+.donation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.donation-input {
+  flex: 1;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+}
+
+.currency-select {
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 0.9rem;
+  min-width: 100px;
+}
+
+.tx-hash-input {
+  width: 100%;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.submit-donation-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.3) 0%, rgba(109, 40, 217, 0.3) 100%);
+  border: 1px solid rgba(147, 51, 234, 0.5);
+  border-radius: 8px;
+  color: #a78bfa;
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 8px;
+}
+
+.submit-donation-btn:hover {
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.4) 0%, rgba(109, 40, 217, 0.4) 100%);
+  border-color: rgba(147, 51, 234, 0.8);
+}
+
+.donation-note {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  margin-top: 12px;
+}
+
+/* ================================
+   CHAT MODAL
+   ================================ */
+
+.chat-modal {
+  background: rgba(15, 15, 15, 0.98);
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 600px;
+  width: 95%;
+  height: 70vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+}
+
+.chat-modal h3 {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 1.3rem;
+  color: #4ade80;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.chat-loading,
+.chat-empty {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 40px;
+}
+
+.chat-message {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border-left: 3px solid rgba(74, 222, 128, 0.5);
+}
+
+.chat-message.own {
+  border-left-color: #d4b978;
+  background: rgba(201, 169, 98, 0.05);
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.message-author {
+  font-family: 'Cinzel', Georgia, serif;
+  font-size: 0.9rem;
+  color: #4ade80;
+}
+
+.message-role {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.message-content {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+}
+
+.chat-input-area {
+  display: flex;
+  gap: 12px;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+}
+
+.chat-input:focus {
+  outline: none;
+  border-color: rgba(74, 222, 128, 0.6);
+}
+
+.send-btn {
+  padding: 12px 24px;
+  background: rgba(74, 222, 128, 0.2);
+  border: 1px solid rgba(74, 222, 128, 0.5);
+  border-radius: 8px;
+  color: #4ade80;
+  font-family: 'Cinzel', Georgia, serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.send-btn:hover {
+  background: rgba(74, 222, 128, 0.3);
+  border-color: rgba(74, 222, 128, 0.8);
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .commons-chat-trigger {
+    top: 70px;
+  }
+  
+  .commons-btn {
+    padding: 10px 18px;
+    font-size: 0.9rem;
+  }
+  
+  .header-buttons {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  
+  .header-btn {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+  }
+}

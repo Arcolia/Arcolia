@@ -4,6 +4,40 @@ import './App.css';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || '';
 
+// The Arcolia Oath
+const ARCOLIA_OATH = `The Arcolia Code & Oath of Entry
+
+The Oath of Entry
+
+I enter Arcolia not as a consumer, but as a steward of knowledge.
+I will seek understanding before judgment, and truth before status.
+I will share what I learn, and protect the dignity of those who learn beside me.
+I will not exploit the guild, nor diminish its people.
+I will challenge ideas without cruelty, and build without arrogance.
+
+If I am given access, I will treat it as responsibility.
+If I am given influence, I will wield it with humility.
+
+I understand that Arcolia is not a marketplace of ego, but a commons of minds.
+By crossing this threshold, I accept that the value of Arcolia is created not by tokens, but by conduct.
+
+So I enter — not to take, but to contribute.
+
+I. Non-Negotiable Rules
+1) Respect is mandatory. Harassment, discrimination, or intimidation are forbidden.
+2) Integrity over influence. No scams, deception, or impersonation.
+3) Knowledge must be shared in good faith. No sabotage or toxic gatekeeping.
+4) No exploitation of the guild. No spam, coercive financial advice, or unsolicited promotion.
+5) Member safety is sacred. No doxxing, threats, or privacy violations.
+6) Arcolia rejects extremism and dehumanisation.
+
+II. Guild Guidelines
+7) Speak with purpose and add value.
+8) Challenge ideas, not people.
+9) Build more than you posture.
+10) Protect the tone and atmosphere of each space.
+11) Responsibility increases with access and influence.`;
+
 function App() {
   const [currentView, setCurrentView] = useState('gate');
   const [user, setUser] = useState(null);
@@ -11,6 +45,9 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [urlToken, setUrlToken] = useState(null);
   const [urlTokenType, setUrlTokenType] = useState(null);
+  const [showOathModal, setShowOathModal] = useState(false);
+  const [oathAccepted, setOathAccepted] = useState(false);
+  const [acceptingOath, setAcceptingOath] = useState(false);
 
   // Check URL params on mount
   useEffect(() => {
@@ -51,8 +88,15 @@ function App() {
       if (response.ok) {
         const userData = await response.json();
         setUser(userData);
-        if (currentView === 'gate' || currentView === 'login') {
-          setCurrentView('guild');
+        
+        // Check if oath needs to be accepted
+        if (!userData.oath_accepted) {
+          setShowOathModal(true);
+        } else {
+          setOathAccepted(true);
+          if (currentView === 'gate' || currentView === 'login') {
+            setCurrentView('guild');
+          }
         }
       } else {
         localStorage.removeItem('arcolia_token');
@@ -69,6 +113,7 @@ function App() {
     localStorage.removeItem('arcolia_token');
     setToken(null);
     setUser(null);
+    setOathAccepted(false);
     setCurrentView('gate');
   };
 
@@ -76,7 +121,35 @@ function App() {
     localStorage.setItem('arcolia_token', newToken);
     setToken(newToken);
     setUser(userData);
-    setCurrentView('guild');
+    
+    // Check if oath has been accepted
+    if (!userData.oath_accepted) {
+      setShowOathModal(true);
+    } else {
+      setOathAccepted(true);
+      setCurrentView('guild');
+    }
+  };
+
+  const handleAcceptOath = async () => {
+    setAcceptingOath(true);
+    try {
+      const response = await fetch(`${API_URL}/api/oath/accept`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        setOathAccepted(true);
+        setShowOathModal(false);
+        setUser({ ...user, oath_accepted: true });
+        setCurrentView('guild');
+      }
+    } catch (err) {
+      console.error('Error accepting oath:', err);
+    } finally {
+      setAcceptingOath(false);
+    }
   };
 
   if (loading) {
@@ -89,13 +162,14 @@ function App() {
   }
 
   // Guild Hall View
-  if (currentView === 'guild' && user) {
+  if (currentView === 'guild' && user && oathAccepted) {
     return (
       <GuildHall 
         user={user}
         token={token}
         onLogout={handleLogout}
         onUpdateUser={setUser}
+        oathText={ARCOLIA_OATH}
       />
     );
   }
@@ -111,6 +185,72 @@ function App() {
         />
         <div className="background-overlay"></div>
       </div>
+
+      {/* Oath Modal */}
+      {showOathModal && (
+        <div className="oath-modal-overlay">
+          <div className="oath-modal">
+            <h2>The Arcolia Code & Oath of Entry</h2>
+            <div className="oath-content">
+              <div className="oath-section">
+                <h3>The Oath of Entry</h3>
+                <p>I enter Arcolia not as a consumer, but as a steward of knowledge.</p>
+                <p>I will seek understanding before judgment, and truth before status.</p>
+                <p>I will share what I learn, and protect the dignity of those who learn beside me.</p>
+                <p>I will not exploit the guild, nor diminish its people.</p>
+                <p>I will challenge ideas without cruelty, and build without arrogance.</p>
+                <p>If I am given access, I will treat it as responsibility.</p>
+                <p>If I am given influence, I will wield it with humility.</p>
+                <p>I understand that Arcolia is not a marketplace of ego, but a commons of minds.</p>
+                <p>By crossing this threshold, I accept that the value of Arcolia is created not by tokens, but by conduct.</p>
+                <p className="oath-conclusion">So I enter — not to take, but to contribute.</p>
+              </div>
+              
+              <div className="rules-section">
+                <h3>I. Non-Negotiable Rules</h3>
+                <ol>
+                  <li>Respect is mandatory. Harassment, discrimination, or intimidation are forbidden.</li>
+                  <li>Integrity over influence. No scams, deception, or impersonation.</li>
+                  <li>Knowledge must be shared in good faith. No sabotage or toxic gatekeeping.</li>
+                  <li>No exploitation of the guild. No spam, coercive financial advice, or unsolicited promotion.</li>
+                  <li>Member safety is sacred. No doxxing, threats, or privacy violations.</li>
+                  <li>Arcolia rejects extremism and dehumanisation.</li>
+                </ol>
+                
+                <h3>II. Guild Guidelines</h3>
+                <ol start="7">
+                  <li>Speak with purpose and add value.</li>
+                  <li>Challenge ideas, not people.</li>
+                  <li>Build more than you posture.</li>
+                  <li>Protect the tone and atmosphere of each space.</li>
+                  <li>Responsibility increases with access and influence.</li>
+                </ol>
+              </div>
+              
+              <div className="oath-warning">
+                <strong>Warning:</strong> Violation of these rules will result in being banned and permanently removed from Arcolia and its ecosystem.
+              </div>
+            </div>
+            
+            <label className="oath-checkbox">
+              <input 
+                type="checkbox" 
+                checked={oathAccepted}
+                onChange={(e) => setOathAccepted(e.target.checked)}
+              />
+              I have read, understood, and agree to uphold the Arcolia Code and Oath
+            </label>
+            
+            <button 
+              className="accept-oath-btn"
+              onClick={handleAcceptOath}
+              disabled={!oathAccepted || acceptingOath}
+            >
+              {acceptingOath ? 'Entering...' : 'I Accept — Enter Arcolia'}
+            </button>
+          </div>
+        </div>
+      )}
 
       <main className="main-content">
         <div className="content-wrapper">

@@ -78,6 +78,19 @@ Note: Until configured, tokens are returned in API responses for testing.
 - [x] requirements.txt updated with all dependencies
 - [x] Role management system (Founders can assign roles)
 - [x] Guild Settings panel (Founders can customize role names and room access)
+- [x] Ban/Delete members functionality
+- [x] **Arcolia Code & Oath** - First-time entry popup with rules
+- [x] **ARCO Token Gating** - Rooms require specific ARCO amounts:
+  - The Commons: 1 ARCO
+  - The Sanctuary: 500,000 ARCO
+  - Treasury: 5,000,000 ARCO
+  - Archives: 25,000,000 ARCO
+  - Council Chamber: 100,000,000 ARCO
+  - Founders & Elders bypass all requirements
+- [x] **Chat Rooms** - Message board in each room
+- [x] **Donation System** - Support Arcolia with crypto (ARCO, BTC, ETH, MATIC, SOL, PAXG)
+  - Treasury wallet: 0xd858646D90cA89a987942509208b272983d53B65
+  - Manual ranking upgrades by Founders
 
 **Note on Blockchain Warning:** The deployment agent flags Web3/blockchain as a blocker. This is a FALSE POSITIVE because all Web3 code (WalletConnect, ethers.js, token balance checks) runs ENTIRELY CLIENT-SIDE in the user's browser. The FastAPI backend has zero blockchain code.
 
