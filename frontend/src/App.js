@@ -105,7 +105,7 @@ function App() {
     <div className="app">
       <div className="background-container">
         <img 
-          src="https://customer-assets.emergentagent.com/job_5f4ad191-281f-40c5-b666-9b6aafb80095/artifacts/uidem9rb_Doors.png" 
+          src={process.env.REACT_APP_GATE_IMAGE_URL} 
           alt="Arcolia Gate" 
           className="background-image"
         />

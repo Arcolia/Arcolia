@@ -170,7 +170,7 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
       {/* Background */}
       <div className="guild-background">
         <img 
-          src="https://customer-assets.emergentagent.com/job_page-builder-225/artifacts/0bd60lpe_Guild%20Hall.png"
+          src={process.env.REACT_APP_GUILD_HALL_IMAGE_URL}
           alt="Guild Hall"
           className="guild-bg-image"
         />
