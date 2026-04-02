@@ -8,7 +8,7 @@ const projectId = process.env.REACT_APP_WALLETCONNECT_PROJECT_ID || '2cfa96ac550
 const metadata = {
   name: 'Arcolia',
   description: 'Access Without Permission - Token-gated guild access',
-  url: typeof window !== 'undefined' ? window.location.origin : 'https://arcolia.app',
+  url: typeof window !== 'undefined' ? window.location.origin : 'https://arcolia.space',
   icons: ['https://avatars.githubusercontent.com/u/37784886']
 }
 
@@ -26,17 +26,21 @@ export const wagmiConfig = defaultWagmiConfig({
   enableCoinbase: false,
 })
 
-// Create modal
-createWeb3Modal({
-  wagmiConfig,
-  projectId,
-  chains,
-  defaultChain: polygon,
-  themeMode: 'dark',
-  themeVariables: {
-    '--w3m-accent': '#c9a962',
-    '--w3m-border-radius-master': '8px',
-  }
-})
+// Create modal - wrapped in try-catch to prevent crashes
+try {
+  createWeb3Modal({
+    wagmiConfig,
+    projectId,
+    chains,
+    defaultChain: polygon,
+    themeMode: 'dark',
+    themeVariables: {
+      '--w3m-accent': '#c9a962',
+      '--w3m-border-radius-master': '8px',
+    }
+  })
+} catch (error) {
+  console.error('Web3Modal initialization error:', error)
+}
 
 export { projectId, chains }
