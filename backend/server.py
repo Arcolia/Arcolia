@@ -403,6 +403,10 @@ async def login(request: LoginRequest):
     if not user.get("email_verified", False):
         raise HTTPException(status_code=403, detail="Please verify your email before logging in")
     
+    # Check if user is banned
+    if user.get("is_banned", False):
+        raise HTTPException(status_code=403, detail="Your account has been banned from Arcolia")
+    
     # Create JWT token
     token = create_jwt_token(str(user["_id"]), user["username"])
     
@@ -645,6 +649,72 @@ async def get_all_users(authorization: str = Header(None)):
         del user["_id"]
     
     return {"users": users, "total": users_collection.count_documents({})}
+
+
+@app.post("/api/admin/ban-user")
+async def ban_user(user_id: str, authorization: str = Header(None)):
+    """Ban a user (Founders only)"""
+    current_user = get_current_user(authorization)
+    
+    if current_user.get("role") != "Founder":
+        raise HTTPException(status_code=403, detail="Only Founders can ban users")
+    
+    # Find target user
+    try:
+        target_user = users_collection.find_one({"_id": ObjectId(user_id)})
+    except:
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+    
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Can't ban yourself
+    if str(target_user["_id"]) == str(current_user["_id"]):
+        raise HTTPException(status_code=400, detail="You cannot ban yourself")
+    
+    # Can't ban other Founders
+    if target_user.get("role") == "Founder":
+        raise HTTPException(status_code=400, detail="You cannot ban another Founder")
+    
+    # Toggle ban status
+    is_banned = target_user.get("is_banned", False)
+    users_collection.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"is_banned": not is_banned}}
+    )
+    
+    action = "unbanned" if is_banned else "banned"
+    return {"message": f"User {action} successfully", "is_banned": not is_banned}
+
+@app.post("/api/admin/delete-user")
+async def delete_user(user_id: str, authorization: str = Header(None)):
+    """Delete a user (Founders only)"""
+    current_user = get_current_user(authorization)
+    
+    if current_user.get("role") != "Founder":
+        raise HTTPException(status_code=403, detail="Only Founders can delete users")
+    
+    # Find target user
+    try:
+        target_user = users_collection.find_one({"_id": ObjectId(user_id)})
+    except:
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+    
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Can't delete yourself
+    if str(target_user["_id"]) == str(current_user["_id"]):
+        raise HTTPException(status_code=400, detail="You cannot delete yourself")
+    
+    # Can't delete other Founders
+    if target_user.get("role") == "Founder":
+        raise HTTPException(status_code=400, detail="You cannot delete another Founder")
+    
+    # Delete the user
+    users_collection.delete_one({"_id": ObjectId(user_id)})
+    
+    return {"message": f"User '{target_user.get('username')}' deleted successfully"}
 
 
 @app.get("/api/admin/settings")

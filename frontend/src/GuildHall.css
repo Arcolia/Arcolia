@@ -701,6 +701,72 @@
   border-radius: 6px;
 }
 
+/* User Actions */
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.ban-btn {
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.ban-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.8);
+}
+
+.ban-btn.unban {
+  border-color: rgba(74, 222, 128, 0.4);
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.ban-btn.unban:hover {
+  background: rgba(74, 222, 128, 0.2);
+  border-color: rgba(74, 222, 128, 0.8);
+}
+
+.delete-btn {
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 1);
+}
+
+.user-row.user-banned {
+  opacity: 0.6;
+  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.banned-badge {
+  font-size: 0.65rem;
+  background: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  letter-spacing: 0.05em;
+}
+
 
 /* Settings Modal */
 .settings-modal {

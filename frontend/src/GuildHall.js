@@ -212,6 +212,54 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
     }
   };
 
+  const banUser = async (userId) => {
+    setAdminError(null);
+    setAdminSuccess(null);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/ban-user?user_id=${userId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.detail || 'Failed to ban user');
+      }
+      const data = await response.json();
+      setAdminSuccess(data.message);
+      fetchAllUsers();
+    } catch (err) {
+      setAdminError(err.message);
+    }
+  };
+
+  const deleteUser = async (userId, username) => {
+    if (!window.confirm(`Are you sure you want to permanently delete "${username}"? This action cannot be undone.`)) {
+      return;
+    }
+    
+    setAdminError(null);
+    setAdminSuccess(null);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/delete-user?user_id=${userId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.detail || 'Failed to delete user');
+      }
+      const data = await response.json();
+      setAdminSuccess(data.message);
+      fetchAllUsers();
+    } catch (err) {
+      setAdminError(err.message);
+    }
+  };
+
   const openAdminModal = () => {
     setShowAdminModal(true);
     fetchAllUsers();
@@ -470,24 +518,48 @@ function GuildHall({ user, token, onLogout, onUpdateUser }) {
             ) : (
               <div className="users-list">
                 {allUsers.map((u) => (
-                  <div key={u.id} className="user-row">
+                  <div key={u.id} className={`user-row ${u.is_banned ? 'user-banned' : ''}`}>
                     <div className="user-info">
-                      <span className="user-name">{u.username}</span>
+                      <span className="user-name">
+                        {u.username}
+                        {u.is_banned && <span className="banned-badge">BANNED</span>}
+                      </span>
                       <span className="user-email">{u.email}</span>
                     </div>
-                    <select 
-                      value={u.role || 'Member'} 
-                      onChange={(e) => updateUserRole(u.id, e.target.value)}
-                      className="role-select"
-                    >
-                      <option value="Founder">Founder</option>
-                      <option value="Elder">Elder</option>
-                      <option value="Noble">Noble</option>
-                      <option value="Knight">Knight</option>
-                      <option value="Squire">Squire</option>
-                      <option value="Initiate">Initiate</option>
-                      <option value="Member">Member</option>
-                    </select>
+                    <div className="user-actions">
+                      <select 
+                        value={u.role || 'Member'} 
+                        onChange={(e) => updateUserRole(u.id, e.target.value)}
+                        className="role-select"
+                        disabled={u.role === 'Founder' && u.id !== user.id}
+                      >
+                        <option value="Founder">Founder</option>
+                        <option value="Elder">Elder</option>
+                        <option value="Noble">Noble</option>
+                        <option value="Knight">Knight</option>
+                        <option value="Squire">Squire</option>
+                        <option value="Initiate">Initiate</option>
+                        <option value="Member">Member</option>
+                      </select>
+                      {u.role !== 'Founder' && u.id !== user.id && (
+                        <>
+                          <button 
+                            className={`action-btn ban-btn ${u.is_banned ? 'unban' : ''}`}
+                            onClick={() => banUser(u.id)}
+                            title={u.is_banned ? 'Unban user' : 'Ban user'}
+                          >
+                            {u.is_banned ? '✓' : '🚫'}
+                          </button>
+                          <button 
+                            className="action-btn delete-btn"
+                            onClick={() => deleteUser(u.id, u.username)}
+                            title="Delete user permanently"
+                          >
+                            🗑️
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
