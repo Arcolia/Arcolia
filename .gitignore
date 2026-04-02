@@ -10,7 +10,7 @@ dist/
 __pycache__/
 *.pyc
 
-# Environment files (keep .env.example for reference)
+# Local environment overrides (NOT the main .env files)
 .env.local
 .env.development.local
 .env.test.local
@@ -39,7 +39,3 @@ coverage/
 # Misc
 .cache/
 *.tmp
--e 
-# Environment files
-*.env
-*.env.*
