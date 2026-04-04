@@ -1,44 +1,52 @@
-const CACHE_NAME = 'arcolia-v1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/static/js/main.js',
-  '/static/css/main.css'
+const CACHE_NAME = 'arcolia-v2';
+const STATIC_ASSETS = [
+  '/static/js/',
+  '/static/css/',
+  '/static/media/'
 ];
 
-// Install event - cache assets
+// Install event - skip waiting to activate immediately
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
-      .catch((err) => {
-        console.log('Cache install error:', err);
-      })
-  );
   self.skipWaiting();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - network-first for HTML/API, cache-first for static assets only
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  
+  // Always go to network for API calls and HTML navigation
+  if (event.request.url.includes('/api/') || 
+      event.request.mode === 'navigate' ||
+      event.request.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+  
+  // For static assets, use cache-first
+  const isStaticAsset = STATIC_ASSETS.some(path => url.pathname.includes(path));
+  if (isStaticAsset) {
+    event.respondWith(
+      caches.match(event.request).then((response) => {
+        return response || fetch(event.request).then((fetchResponse) => {
+          return caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, fetchResponse.clone());
+            return fetchResponse;
+          });
+        });
+      })
+    );
+    return;
+  }
+  
+  // Default: network-first
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request);
-      })
-      .catch(() => {
-        // If both fail, return offline page for navigation requests
-        if (event.request.mode === 'navigate') {
-          return caches.match('/');
-        }
-      })
+    fetch(event.request).catch(() => caches.match(event.request))
   );
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up old caches and claim clients immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -49,7 +57,6 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
