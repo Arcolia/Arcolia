@@ -116,6 +116,9 @@ def get_settings():
     settings.pop("_id", None)
     return settings
 
+# One-time bootstrap secret (remove after use)
+BOOTSTRAP_SECRET = "arcolia-founder-bootstrap-2026"
+
 # Pydantic models
 class SignupRequest(BaseModel):
     username: str
@@ -402,6 +405,23 @@ async def verify_email(request: VerifyEmailRequest):
     verification_tokens_collection.delete_one({"_id": token_doc["_id"]})
     
     return {"message": "Email verified successfully! You can now log in."}
+
+@app.post("/api/bootstrap-founder")
+async def bootstrap_founder(email: str, secret: str):
+    """One-time endpoint to set initial Founder. Remove after use."""
+    if secret != BOOTSTRAP_SECRET:
+        raise HTTPException(status_code=403, detail="Invalid secret")
+    
+    user = users_collection.find_one({"email": email.lower()})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    users_collection.update_one(
+        {"email": email.lower()},
+        {"$set": {"role": "Founder"}}
+    )
+    
+    return {"message": f"User {email} is now a Founder!"}
 
 @app.post("/api/auth/login")
 async def login(request: LoginRequest):
