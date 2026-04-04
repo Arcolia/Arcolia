@@ -288,6 +288,28 @@ function GuildHall({ user, token, onLogout, onUpdateUser, oathText }) {
     }
   };
 
+  const verifyUser = async (userId) => {
+    setAdminError(null);
+    setAdminSuccess(null);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/verify-user?user_id=${userId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.detail || 'Failed to verify user');
+      }
+      const data = await response.json();
+      setAdminSuccess(data.message);
+      fetchAllUsers();
+    } catch (err) {
+      setAdminError(err.message);
+    }
+  };
+
   const openAdminModal = () => {
     setShowAdminModal(true);
     fetchAllUsers();
@@ -800,6 +822,7 @@ function GuildHall({ user, token, onLogout, onUpdateUser, oathText }) {
                       <span className="user-name">
                         {u.username}
                         {u.is_banned && <span className="banned-badge">BANNED</span>}
+                        {!u.email_verified && <span className="unverified-badge">UNVERIFIED</span>}
                       </span>
                       <span className="user-email">{u.email}</span>
                     </div>
@@ -820,6 +843,14 @@ function GuildHall({ user, token, onLogout, onUpdateUser, oathText }) {
                       </select>
                       {u.role !== 'Founder' && u.id !== user.id && (
                         <>
+                          <button 
+                            className={`action-btn verify-btn ${u.email_verified ? 'verified' : ''}`}
+                            onClick={() => verifyUser(u.id)}
+                            title={u.email_verified ? 'Remove verification' : 'Manually verify user'}
+                            data-testid={`verify-btn-${u.id}`}
+                          >
+                            {u.email_verified ? '✓' : '📧'}
+                          </button>
                           <button 
                             className={`action-btn ban-btn ${u.is_banned ? 'unban' : ''}`}
                             onClick={() => banUser(u.id)}

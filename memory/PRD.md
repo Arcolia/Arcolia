@@ -91,6 +91,7 @@ Note: Until configured, tokens are returned in API responses for testing.
 - [x] **Donation System** - Support Arcolia with crypto (ARCO, BTC, ETH, MATIC, SOL, PAXG)
   - Treasury wallet: 0xd858646D90cA89a987942509208b272983d53B65
   - Manual ranking upgrades by Founders
+- [x] **Manual User Verification** - Founders can manually verify/unverify user emails from Admin Panel
 
 **Note on Blockchain Warning:** The deployment agent flags Web3/blockchain as a blocker. This is a FALSE POSITIVE because all Web3 code (WalletConnect, ethers.js, token balance checks) runs ENTIRELY CLIENT-SIDE in the user's browser. The FastAPI backend has zero blockchain code.
 

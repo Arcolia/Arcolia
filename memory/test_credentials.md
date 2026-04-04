@@ -35,5 +35,6 @@
 - POST /api/auth/update-role - Change user role
 - POST /api/admin/ban-user?user_id={id} - Ban/unban user
 - POST /api/admin/delete-user?user_id={id} - Delete user permanently
+- POST /api/admin/verify-user?user_id={id} - Manually verify/unverify user email
 - GET /api/admin/settings - Get guild settings
 - POST /api/admin/settings - Update guild settings

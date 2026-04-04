@@ -776,6 +776,36 @@
   letter-spacing: 0.05em;
 }
 
+.unverified-badge {
+  font-size: 0.65rem;
+  background: rgba(251, 191, 36, 0.3);
+  color: #fbbf24;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  letter-spacing: 0.05em;
+}
+
+.verify-btn {
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.verify-btn:hover {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: rgba(251, 191, 36, 0.8);
+}
+
+.verify-btn.verified {
+  border-color: rgba(74, 222, 128, 0.4);
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.verify-btn.verified:hover {
+  background: rgba(74, 222, 128, 0.2);
+  border-color: rgba(74, 222, 128, 0.8);
+}
+
 
 /* Settings Modal */
 .settings-modal {
