@@ -734,6 +734,34 @@ async def delete_user(user_id: str, authorization: str = Header(None)):
     
     return {"message": f"User '{target_user.get('username')}' deleted successfully"}
 
+@app.post("/api/admin/verify-user")
+async def manual_verify_user(user_id: str, authorization: str = Header(None)):
+    """Manually verify a user's email (Founders only)"""
+    current_user = get_current_user(authorization)
+    
+    if current_user.get("role") != "Founder":
+        raise HTTPException(status_code=403, detail="Only Founders can manually verify users")
+    
+    # Find target user
+    try:
+        target_user = users_collection.find_one({"_id": ObjectId(user_id)})
+    except:
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+    
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Toggle verification status
+    is_verified = target_user.get("email_verified", False)
+    users_collection.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"email_verified": not is_verified}}
+    )
+    
+    action = "unverified" if is_verified else "verified"
+    return {"message": f"User {action} successfully", "email_verified": not is_verified}
+
+
 
 @app.get("/api/admin/settings")
 async def get_guild_settings(authorization: str = Header(None)):
