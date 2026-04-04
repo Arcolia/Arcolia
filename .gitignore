@@ -43,3 +43,7 @@ coverage/
 
 # Sensitive files - do not deploy
 memory/test_credentials.md
+-e 
+# Environment files
+*.env
+*.env.*
